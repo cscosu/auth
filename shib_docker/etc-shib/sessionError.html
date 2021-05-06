@@ -1,0 +1,240 @@
+<html>
+<head>
+	<style>
+	body
+	{
+		margin-top: 0px;
+		margin-bottom: 12px;
+		margin-left: 12px;
+		margin-right: 10px;
+		font-family: "trebuchet ms", Helvetica, Arial, sans-serif;
+		font-size: .9em;
+		line-height: 135%;
+		padding: 0px;
+	}
+
+	.hidden {
+	    display: none;
+	}
+
+    br.clearall {
+        clear: both;
+    }
+
+/* * * * * * * * * * 
+        Ohio State masthead navigation bar styles
+        Created: September 2004.
+        Updated: August 2006: OSU-specific naming ("osu-"), Better accessiblity
+        For more information see: http://www.osu.edu/resources/
+* * * * * * * * * */
+
+/* Hide semantic content, keep it readable for screen readers. 
+This is the technique advocated by WebAIM (http://webaim.org/techniques/css/invisiblecontent/) */
+.osu-semanticContent { 
+  position: absolute; 
+  left: 0; 
+  top: -500px; 
+  width: 1px; 
+  height: 1px; 
+  overflow: hidden;
+}
+
+#osu-masthead {
+  width: 100%;
+  line-height: 100%;
+  position: relative;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  margin: 0px;
+  padding: 0px;
+        background: #c9c9c9 url(../images/gradient.jpg) no-repeat 0px 0px;
+}
+
+div.osu-masttitle, div.osu-masturl {
+  margin: 0px;
+  float: left;
+  position: relative;
+  padding: 8px;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  padding-left: 6px;
+  padding-right: 6px;
+  line-height: 100%;
+}
+
+div.osu-masttitle {
+  padding-left: 11px;
+  padding-right: 11px;
+  background-color: #990000;
+  border-right: 1px solid #CCC;
+}
+
+div.osu-masttitle a, div.osu-masturl a {
+  text-decoration: none;
+  color: #FFF;
+}
+
+div.osu-masttitle a:hover, div.osu-masturl a:hover {
+  color: #F9F7DC;
+  text-decoration: underline;
+}
+
+#osu-mastnavigation {
+  position: relative;
+  float: right;
+  padding: 0px;
+  padding-top: 4px;
+  margin: 0px;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  line-height: 100%;
+}
+
+#osu-mastnavigation-searchlink {
+  position: relative;
+  float: right;
+  padding: 8px;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  padding-left: 6px;
+  padding-right: 6px;
+  line-height: 100%;
+}
+
+
+#osu-mastnavigation ol, #osu-mastnavigation-searchlink ol {
+  display: inline;
+  margin-bottom: 0;
+  list-style-type: none;
+  color: #FFF;
+  margin-right: 6px;
+}
+
+#osu-mastnavigation ol li, #osu-mastnavigation-searchlink ol li {
+  display: inline;
+}
+
+#osu-mastnavigation ol li img { vertical-align: middle; }
+
+#osu-mastnavigation ol li a, #osu-mastnavigation-searchlink ol li a {
+  color: #222;
+  padding: 0em 5px;
+  text-decoration: none;
+  border-right: 0px solid #CCC;
+}
+
+#osu-mastnavigation ol li a:hover, #osu-mastnavigation ol li a:focus, #osu-mastnavigation-searchlink ol li a:hover, #osu-mastnavigation-searchlink ol li a:focus{
+  background: #EEE;
+  color: #000;
+}
+
+#osu-mastnavigation input { 
+  vertical-align: middle; 
+}
+
+#osu-mastnavigation input.textfield {
+  padding: 0px;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  background: #DDE0C6;
+  width: 65px;
+  border: 1px solid #666;
+  height: 1.4em;
+}
+
+#osu-mastnavigation input.textfield:focus, #osu-mastnavigation input.textfield:hover {
+  background: #F6F9DC;
+}
+
+/* Image swapping using Petr Stanicek's (aka Pixy) method (http://wellstyled.com/css-nopreload-rollovers.html) */
+#osu-mastnavigation input.go {
+  background: #CCC url(../images/go.gif) 0 0 no-repeat;
+  border: none;
+  padding: 2px 3px;
+  color: #CCC;
+  font-size: xx-small;
+  cursor: pointer;
+}
+
+#osu-mastnavigation input.go:hover, #osu-mastnavigation input.go:focus {
+  background: #CCC url(../images/go.gif) 0 -18px no-repeat;
+  color: #FFF;
+}
+
+br.osu-clearall { clear: both; }
+
+div.osu-hr {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  height: 1px;
+  background: #D5D5E6;
+  border-top: 1px solid white;
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * 
+        <hr> tag hack for more ie 5,6.x compatibility. found here:
+        http://www.sovavsiti.cz/css/hr.html
+* * * * * * * * * * * * * * * * * * * */
+div.osu-hr hr { display: none; }
+ 	</style>
+	<title>Application Web Login Service Failure</title>
+</head>
+
+<body>
+
+<!-- Ohio State University masthead: Updated September 2006: Accessiblity improvements. See http://www.osu.edu/resources/ -->
+<h2 class="osu-semanticContent">Begin OSU masthead and toolbar</h2>
+<div id="osu-masthead">
+        <div class="osu-masttitle">
+        <a href="http://www.osu.edu/" title="The Ohio State University">The Ohio State University</a>
+        </div>
+
+        <div class="osu-masturl">
+         <a href="http://www.osu.edu/" title="The Ohio State University">www.osu.edu</a>
+        </div>
+        <form id="osu-mastnavigation" action="http://google.service.ohio-state.edu/search" method="get" name="gs">
+                <ol>
+                        <li><a href="http://www.osu.edu/help.php" title="OSU Help">Help</a></li>
+                        <li><a href="http://www.osu.edu/map/" title="Campus map">Campus map</a></li>
+                        <li><a href="http://www.osu.edu/findpeople.php" title="Find people at OSU">Find people</a></li>
+                        <li><a href="https://webmail.osu.edu" title="OSU Webmail">Webmail</a></li>
+                        <li>
+                                <div class="osu-semanticContent">
+                                        <label for="Search">Search Ohio State</label>
+                                </div>
+                                <input value="date:D:L:d1" name="sort" type="hidden" /><input value="xml_no_dtd" name="output" type="hidden" /><input value="UTF-8" name="ie" type="hidden" /><inp
+ut value="UTF-8" name="oe" type="hidden" /><input value="default_frontend" name="client" type="hidden" /><input value="default_frontend" name="proxystylesheet" type="hidden" /><input value="defa
+ult_collection" name="site" type="hidden" /><input type="hidden" name="as_dt" value="i" />
+                                <input id="Search" class="textfield" type="text" name="q" size="14" maxlength="256" value="Search" onfocus="this.value='';" accesskey="s" tabindex="1" />
+                                <input class="go" type="submit" value="Go" name="submit"/>
+                        </li>
+                </ol>
+        </form>
+        <br class="osu-clearall" />
+</div>
+<div class="osu-hr"><hr /></div>
+<!-- End masthead -->
+
+<h2>Application Web Login Service Failure</h2>
+
+<p>The application encountered a problem during login at <shibmlp now /></p>
+
+<p>Please contact <a href="mailto:info@osucyber.club">info@osucyber.club</a>,
+and include the following error message:</p>
+
+<p>Failure at (<shibmlp requestURL/>)</p>
+<p><shibmlp errorType/>: <shibmlp errorText/></p>
+
+<shibmlpif statusCode>
+	<p>Error from identity provider:</p>
+	<blockquote>
+		<strong>Status:</strong> <shibmlp statusCode/><br>
+		<shibmlpif statusCode2>
+			<strong>Sub-Status:</strong> <shibmlp statusCode2/><br>
+		</shibmlpif>
+		<shibmlpif statusMessage>
+			<strong>Message:</strong> <shibmlp statusMessage/><br>
+		</shibmlpif>
+	</blockquote>
+</shibmlpif>
+
+</body>
+</html>
+

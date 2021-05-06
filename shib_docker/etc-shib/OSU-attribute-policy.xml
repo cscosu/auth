@@ -1,0 +1,27 @@
+<AttributeFilterPolicyGroup
+    xmlns="urn:mace:shibboleth:2.0:afp"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <AttributeFilterPolicy>
+        <!-- This policy is in effect in all cases. -->
+        <PolicyRequirementRule xsi:type="ANY"/>
+
+        <AttributeRule attributeID="WHOIS-ID">
+            <PermitValueRule xsi:type="Issuer" value="urn:mace:incommon:osu.edu"/>
+        </AttributeRule>
+
+        <AttributeRule attributeID="FERPA">
+            <PermitValueRule xsi:type="Issuer" value="urn:mace:incommon:osu.edu"/>
+        </AttributeRule>
+
+        <AttributeRule attributeID="MAJOR">
+            <PermitValueRule xsi:type="Issuer" value="urn:mace:incommon:osu.edu"/>
+        </AttributeRule>
+
+        <AttributeRule attributeID="*">
+            <PermitValueRule xsi:type="ANY"/>
+        </AttributeRule>
+    </AttributeFilterPolicy>
+
+</AttributeFilterPolicyGroup>
+
