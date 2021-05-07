@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+      <p class="card-header-title">
+        Join the mailing list
+      </p>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        {% if can_subscribe %}
+        <form action="{% url 'subscribe' %}" method="post">
+            {% csrf_token %}
+            <input class="button" type="submit" value="Sign up for our mailing list!">
+        </form>
+        {% else %}
+        <p><strong>It looks like you are already on the mailing list!</strong></p>
+        <p>If you removed yourself from the mailing list and need to resubscribe, you can do that <a href="http://mailinglist.osucyber.club">here</a>.</p>
+        {% endif %}
+      </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+      <p class="card-header-title">
+        Discord Setup
+      </p>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <p>Join our Discord: <a href="https://discord.gg/TdjSCHQtES">https://discord.gg/TdjSCHQtES</a></p>
+        <p>Send the following message in a <strong>DIRECT MESSAGE</strong> to OSUBot:</p>
+        <pre id="discord-msg">{{ discord_token_msg }}</pre>
+        <button id="copy-btn" class="button">Copy to clipboard</button>
+        <p>This will give you access to non-public channels. <strong>This token is unique to you, and will only work for one discord account.</strong> If you have issues, please ask an officer.</p>
+      </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+      <p class="card-header-title">
+        Meetings
+      </p>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <p>Regular meetings are Tuesdays at 7pm in Fontana Lab 2040. Our first meeting of AU21 is Tuesday Aug 31, 2021.</p>
+        <p>Meeting reminders are sent as part of a weekly newsletter.</p>
+      </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+      <p class="card-header-title">
+        In the meantime...
+      </p>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <p>Check out our Wiki at <a href="https://wiki.osucyber.club/">https://wiki.osucyber.club/</a>! We have a lot of content from past meetings available.</p>
+        <p>Check out our <a href="https://wiki.osucyber.club/en/Bootcamp-CTF/Welcome">Bootcamp CTF</a>! This is our series of hacking challenges you can try, right now! This will be continuing through Autumn 2021, and we have prizes! <a href="https://wiki.osucyber.club/en/Bootcamp-CTF/Welcome">More info here.</a></p>
+      </div>
+    </div>
+</div>
+
+<script>
+    function copy() {
+      var copyText = document.querySelector("#discord-msg");
+      
+      var range = document.createRange();
+      range.selectNodeContents(copyText);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      document.execCommand("copy");
+      
+    }
+    
+    document.querySelector("#copy-btn").addEventListener("click", copy);
+</script>
+
+{% else %}
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+      <p class="card-header-title">
+        Welcome to Cyber Security Club
+      </p>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <ul>
+            <li>Mailing list: <a href="http://mailinglist.osucyber.club">http://mailinglist.osucyber.club</a></li>
+            <li>Discord: <a href="https://discord.gg/TdjSCHQtES">https://discord.gg/TdjSCHQtES</a></li>
+            <li>Meetings are Tuesdays at 7pm (location TBA)</li>
+      </div>
+    </div>
+</div>
+{% include "wall.html" %}
+{% endif %}
+{% endblock %}

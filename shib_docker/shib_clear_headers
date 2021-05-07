@@ -31,4 +31,10 @@ more_clear_input_headers
     Commonname
     DisplayName
     Email
-    OrganizationName;
+    OrganizationName
+    Employeenumber
+    Displayname
+    Mail
+    Eppn
+    Givenname
+    Sn;

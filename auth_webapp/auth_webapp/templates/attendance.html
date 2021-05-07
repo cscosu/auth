@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+{% if can_attend %}
+<form action="{% url 'attend' %}" method="post">
+    {% csrf_token %}
+    <input class="button" type="submit" value="I'm here!">
+</form>
+{% else %}
+<h2>You have signed in!</h2>
+{% endif %}
+<hr>
+<h4>Past Attendance</h4>
+<table class="table">
+    <thead>
+        <tr><th>Date</th></tr>
+    </thead>
+    <tbody>
+        {% for a in attendance %}
+        <tr><td>{{ a.date_recorded }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

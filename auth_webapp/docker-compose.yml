@@ -1,0 +1,23 @@
+version: '3'
+services:
+  app:
+    build: 
+      context: ./
+      dockerfile: Dockerfile.debug
+    ports:
+      - "80:80"
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - ./auth_webapp/.env-dev:/app/auth_webapp/.env
+      - ../shib_docker/static/:/static/
+    depends_on:
+      - "dev_postgres"
+    environment:
+      - PYTHONUNBUFFERED=1
+  dev_postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: secretpassword
+    expose:
+      - 5432

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="static/css/bulma.min.css">
+    <title>Cyber Security Club @ Ohio State</title>
+</head>
+
+<body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="{% url 'home' %}">
+            <img src="https://osucyber.club/img/logo.png" width="28" style="max-height: inherit;">
+          </a>
+      
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+      
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="{% url 'home' %}">
+              Home
+            </a>
+
+            <a class="navbar-item" href="{% url 'attendance' %}">
+                Attendance
+            </a>
+
+            <a class="navbar-item" href="{% url 'new_member' %}">
+                New Members
+            </a>
+      
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    More
+                </a>
+        
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="https://wiki.osucyber.club">
+                    Wiki
+                    </a>
+                    <a class="navbar-item" href="https://osucyber.club">
+                    Club Homepage
+                    </a>
+                    <hr class="navbar-divider">
+                    <a class="navbar-item">
+                    Issues? Ask in discord or email info@osucyber.club
+                    </a>
+                </div>
+            </div>
+        </div>
+      
+          <div class="navbar-end">
+            <div class="navbar-item">
+              {% if not user.is_authenticated %}
+              <div class="buttons">
+                <a class="button is-primary" href="{% url 'login' %}">
+                  <strong>Log in w/ OSU</strong>
+                </a>
+              </div>
+              {% else %}
+              <div class="navbar-item">
+                <a>Logged in as {{ user.name_num }}</a>
+              </div>
+              <div class="buttons">
+                <a class="button is-primary" href="{% url 'logout' %}">
+                  <strong>Logout</strong>
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+    <section class="section">
+    <div class="container">
+        {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <article class="message">
+        <div class="message-header">
+          <p>Message</p>
+        </div>
+        <div class="message-body">
+          {{ message }}
+        </div>
+      </article>
+    {% endfor %}
+</ul>
+{% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    </section>
+<script>
+    (function () {
+    var burger = document.querySelector('.navbar-burger');
+    var menu = document.querySelector('#' + burger.dataset.target);
+    burger.addEventListener('click', function () {
+        burger.classList.toggle('is-active');
+        menu.classList.toggle('is-active');
+    });
+})();
+</script>
+</body>
+</html>

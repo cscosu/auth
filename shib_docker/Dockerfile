@@ -60,6 +60,8 @@ COPY ./etc-shib/ /etc/shibboleth/
 COPY nginx-auth.conf /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
+COPY ./static /var/www/static/
+
 
 CMD service nginx start && /etc/init.d/shibd restart && /usr/bin/supervisord
 # CMD ["service", "supervisor", "start"]

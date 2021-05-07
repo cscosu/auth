@@ -26,21 +26,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
+JWT_SECRET1 = os.environ['JWT_SECRET1'] # shared with bot
+JWT_SECRET2 = os.environ['JWT_SECRET2']
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG") == 'True'
-
 ALLOWED_HOSTS = ["auth.osucyber.club"] if not DEBUG else ["localhost"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'auth_webapp',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +74,25 @@ TEMPLATES = [
         },
     },
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'django.err',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
 
 WSGI_APPLICATION = 'auth_webapp.wsgi.application'
 
@@ -113,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -126,6 +149,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '../shib_docker/static/'
+
+STATICFILES_DIRS = ['/static']
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+AUTHENTICATION_BACKENDS = ['auth_webapp.auth_backend.ShibAuthBackend']
+AUTH_USER_MODEL = 'auth_webapp.OSUUser'

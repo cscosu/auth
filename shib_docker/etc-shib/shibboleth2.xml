@@ -66,7 +66,7 @@
     Resource requests are mapped by the RequestMapper to an applicationId that
     points into to this section (or to the defaults here).
     -->
-    <ApplicationDefaults entityID="https://sp.example.org/shibboleth"
+    <ApplicationDefaults entityID="https://auth.osucyber.club/shibboleth"
                          REMOTE_USER="WHOIS-ID eppn subject-id pairwise-id">
 
         <!--
@@ -76,7 +76,7 @@
         a relative value based on the virtual host. Using handlerSSL="true", the default, will force
         the protocol to be https. You should also set cookieProps to "https" for SSL-only sites.
  	-->
-        <Sessions lifetime="28800" timeout="3600" checkAddress="true"
+        <Sessions lifetime="28800" timeout="3600" checkAddress="false"
             relayState="ss:mem" handlerSSL="true" cookieProps="https"
             redirectLimit="exact">
 
@@ -142,10 +142,10 @@
         </AttributeFilter>
 
         <!-- Simple file-based resolvers for separate signing/encryption keys. -->
-        <CredentialResolver type="File" use="signing"
-            key="sp-signing-key.pem" certificate="sp-signing-cert.pem"/>
+        <!-- <CredentialResolver type="File" use="signing"
+            key="sp-signing-key.pem" certificate="sp-signing-cert.pem"/> -->
         <CredentialResolver type="File" use="encryption"
-            key="sp-encrypt-key.pem" certificate="sp-encrypt-cert.pem"/>
+            key="sp-key.pem" certificate="sp-cert.pem"/>
 
     </ApplicationDefaults>
     
