@@ -57,6 +57,9 @@ COPY ./keys/web/auth-osucyber-club-selfsigned.key /etc/nginx/auth-osucyber-club-
 
 # -- CONFIGURATION --
 COPY ./etc-shib/ /etc/shibboleth/
+COPY nginx-auth.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
-CMD ["/usr/bin/supervisord"]
+
+CMD service nginx start && /etc/init.d/shibd restart && /usr/bin/supervisord
 # CMD ["service", "supervisor", "start"]

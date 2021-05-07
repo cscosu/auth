@@ -1,0 +1,10 @@
+<html>
+    <body>
+        <h1>Cyber Security Club Member Resources<h1>
+        {% if session is not None and 'headers' in session %}
+            <p>You are logged in! Here's some info {{ session.headers }}</p>
+        {% else %}
+        <h2><a href="login/">Login here!</a></h2>
+        {% endif %}
+    </body>
+</html>

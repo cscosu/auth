@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'sl@^-p@t&n!!%d)+002b=%hrq(-1m0p$a_dl-7vss)!(!tob*b'
+SECRET_KEY = os.environ['DJANGO_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG") == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["auth.osucyber.club"] if not DEBUG else ["localhost"]
 
 
 # Application definition
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'auth_webapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['auth_webapp/templates/'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,3 +126,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

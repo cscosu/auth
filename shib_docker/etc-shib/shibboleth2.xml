@@ -117,7 +117,7 @@
 
         <MetadataProvider type="XML" id="OSU" url="https://webauth.service.ohio-state.edu/OSU-idp-metadata.xml"
                 validate="true" maxRefreshDelay="14400" backingFilePath="OSU-idp-metadata.xml">
-            <MetadataFilter type="Signature" certificate="OSU-metadata.pem"/>
+            <MetadataFilter type="Signature" certificate="OSU-metadata.cer"/>
             <MetadataFilter type="RequireValidUntil" maxValidityInterval="259200"/>
         </MetadataProvider>
 

@@ -19,5 +19,5 @@ import auth_webapp.views as views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('login', views.login, name='login'),
+    path('login/', views.login, name='login'),
 ]
