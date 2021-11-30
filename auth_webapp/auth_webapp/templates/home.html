@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-        {% if user.is_authenticated %}
-        <h2>Welcome, {{ user.display_name }}!</h2>
-        <a class="button" href="{% url 'attendance' %}">Attendance</a>
-        <a class="button" href="{% url 'new_member' %}">New Member Resources</a>
-        {% else %}
-        {% include "wall.html" %}
-        {% endif %}
+{% if user.is_authenticated %}
+<h2>Welcome, {{ user.display_name }}!</h2>
+<a class="button" href="{% url 'attendance' %}">Attendance</a>
+<a class="button" href="{% url 'new_member' %}">New Member Resources</a>
+{% else %}
+{% include "wall.html" %}
+{% endif %}
 {% endblock %}

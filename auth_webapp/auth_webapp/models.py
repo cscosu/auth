@@ -7,12 +7,9 @@ import hashlib
 
 try:
     client = MailchimpMarketing.Client()
-    client.set_config({
-        "api_key": os.environ["MAILCHIMP_API_KEY"],
-        "server": "us16"
-    })
+    client.set_config({"api_key": os.environ["MAILCHIMP_API_KEY"], "server": "us16"})
 except ApiClientError as error:
-    print("MAILCHIMP ERROR: "+error)
+    print("MAILCHIMP ERROR: " + error)
 
 # class OSUUserManager(BaseUserManager):
 #     # This makes stuff work like manage.py createsuperuser
@@ -33,8 +30,8 @@ except ApiClientError as error:
 
 
 class OSUUser(AbstractBaseUser, PermissionsMixin):
-    USERNAME_FIELD = 'shib_id'
-    REQUIRED_FIELDS = ['display_name', 'name_num']
+    USERNAME_FIELD = "shib_id"
+    REQUIRED_FIELDS = ["display_name", "name_num"]
     shib_id = models.CharField(max_length=50, unique=True, primary_key=True)
     name_num = models.CharField(max_length=50)
     display_name = models.CharField(max_length=100)
@@ -45,10 +42,10 @@ class OSUUser(AbstractBaseUser, PermissionsMixin):
     # Affiliation is going to be interesting. In theory one user can have more than one affiliation.
     # But here I'm assuming we pick one.
     # More info: https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html#edupersonscopedaffiliation
-    aff_choices = models.TextChoices(
-        'Affiliation', 'STUDENT FACULTY_STAFF ALUMNI NONE')
+    aff_choices = models.TextChoices("Affiliation", "STUDENT FACULTY_STAFF ALUMNI NONE")
     affiliation = models.CharField(
-        max_length=20, choices=aff_choices.choices, default=aff_choices.NONE)
+        max_length=20, choices=aff_choices.choices, default=aff_choices.NONE
+    )
     is_admin = models.BooleanField(default=False)
 
     # This is effectively a cache for the function below
@@ -57,31 +54,34 @@ class OSUUser(AbstractBaseUser, PermissionsMixin):
     def is_currently_on_mailing_list(self):
         if self.added_to_mailing_list:
             return True
-        email = (self.name_num+"@osu.edu").lower()
+        email = (self.name_num + "@osu.edu").lower()
         try:
             list_info = client.lists.get_list_member(
-                os.environ['MAILCHIMP_LIST_ID'], hashlib.md5(email.encode()).hexdigest())
-            if list_info['status'] == 'subscribed':
+                os.environ["MAILCHIMP_LIST_ID"], hashlib.md5(email.encode()).hexdigest()
+            )
+            if list_info["status"] == "subscribed":
                 self.added_to_mailing_list = True
                 self.save()
                 return True
             else:
-                print("Subscriber exists but not subscribed: "+email)
+                print("Subscriber exists but not subscribed: " + email)
                 return False
         except ApiClientError:
             return False
 
     def add_to_mailing_list(self):
-        email = (self.name_num+"@osu.edu").lower()
+        email = (self.name_num + "@osu.edu").lower()
         try:
-            list_info = client.lists.add_list_member(os.environ['MAILCHIMP_LIST_ID'], {
-                                                     'email_address': email, 'status': 'subscribed'})
-            if list_info['status'] == 'subscribed':
+            list_info = client.lists.add_list_member(
+                os.environ["MAILCHIMP_LIST_ID"],
+                {"email_address": email, "status": "subscribed"},
+            )
+            if list_info["status"] == "subscribed":
                 self.added_to_mailing_list = True
                 self.save()
                 return True
             else:
-                print("New sub status not subscribed: "+str(list_info))
+                print("New sub status not subscribed: " + str(list_info))
         except ApiClientError as e:
             print("api error")
             print(e.text)
@@ -106,5 +106,6 @@ class AttendanceRecord(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(OSUUser, on_delete=models.CASCADE)
     date_recorded = models.DateTimeField()
+
 
 # TODO: Add Meeting model and possible per-meeting survey questions or something

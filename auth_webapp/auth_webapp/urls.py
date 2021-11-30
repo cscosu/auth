@@ -19,15 +19,14 @@ import auth_webapp.views as views
 import auth_webapp.discord_bot as discord_bot_views
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('login/', views.login_view, name='login'),
-    path('debug_login/', views.debug_login, name='debug_login'),
-    path('logout', views.logout_view, name='logout'),
-    path('admin/', admin.site.urls),
-    path('new', views.new_member, name='new_member'),
-    path('attendance', views.attendance, name='attendance'),
-    path('attendance/attend', views.attend, name='attend'),
-    path('attendance/subscribe', views.subscribe, name='subscribe'),
-    path('internal/link_discord', discord_bot_views.link_discord, name='link_discord')
-
+    path("", views.home, name="home"),
+    path("login/", views.login_view, name="login"),
+    path("debug_login/", views.debug_login, name="debug_login"),
+    path("logout", views.logout_view, name="logout"),
+    path("admin/", admin.site.urls),
+    path("new", views.new_member, name="new_member"),
+    path("attendance", views.attendance, name="attendance"),
+    path("attendance/attend", views.attend, name="attend"),
+    path("attendance/subscribe", views.subscribe, name="subscribe"),
+    path("internal/link_discord", discord_bot_views.link_discord, name="link_discord"),
 ]
