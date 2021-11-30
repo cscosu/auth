@@ -7,6 +7,7 @@ class ShibAuthBackend(ModelBackend):
     for that. Trusted headers are sent from nginx to /login and then we explicitly
     call login. This is pretty much a dummy authentication backend.
     """
+
     def authenticate(self, request):
         # Deny the silly case where they try to login on /admin with a username/password
         return None

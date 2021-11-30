@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
-JWT_SECRET1 = os.environ['JWT_SECRET1'] # shared with bot
+JWT_SECRET1 = os.environ['JWT_SECRET1']  # shared with bot
 JWT_SECRET2 = os.environ['JWT_SECRET2']
 
 
