@@ -3,3 +3,4 @@ python-dotenv
 psycopg2
 git+https://github.com/mailchimp/mailchimp-marketing-python.git
 pyjwt
+cryptography

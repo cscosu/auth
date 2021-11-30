@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="margin-top: 50px;">
+    <header class="card-header">
+        <p class="card-header-title">
+            Elections
+        </p>
+    </header>
+    <div class="card-content">
+        <div class="content">
+            <div class="content">
+                <p>Here is your voting token:</p>
+                <pre id="token">{{ token_text }}</pre>
+                <button id="copy-btn" class="button">Copy to clipboard</button>
+                <p><strong>If no token appears above, click generate below to generate one. IT CAN ONLY BE GENERATED
+                        ONCE -- SAVE IT.</strong></p>
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <input class="button" type="submit" value="Generate"></input>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copy() {
+        var copyText = document.querySelector("#token");
+
+        var range = document.createRange();
+        range.selectNodeContents(copyText);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        document.execCommand("copy");
+
+    }
+
+    var tokenElt = document.querySelector("#token");
+
+    document.querySelector("#copy-btn").addEventListener("click", copy);
+    if (tokenElt.textContent.length > 0) {
+        localStorage.token = tokenElt.textContent
+    } else if (localStorage.token) {
+        tokenElt.textContent = localStorage.token
+    }
+</script>
+{% endblock %}

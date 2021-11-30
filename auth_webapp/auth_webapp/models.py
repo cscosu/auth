@@ -38,6 +38,7 @@ class OSUUser(AbstractBaseUser, PermissionsMixin):
     # You can change this type if needed
     discord_id = models.CharField(max_length=100, null=True, blank=True)
     last_login = models.DateTimeField(null=True)
+    voted = models.BooleanField(default=False)
 
     # Affiliation is going to be interesting. In theory one user can have more than one affiliation.
     # But here I'm assuming we pick one.

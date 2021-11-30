@@ -17,6 +17,8 @@ import datetime
 import time
 import pytz
 import jwt
+import os
+import base64
 
 ohio_tz = pytz.timezone("America/New_York")
 
@@ -183,3 +185,67 @@ def subscribe(request):
         )
 
     return redirect("new_member")
+
+
+@require_http_methods(["GET", "POST"])
+def elections(request):
+    if not request.user.is_authenticated:
+        return redirect("/login?return=/election")
+
+    if request.method != "POST":
+        return render(request, "tokens.html", {"token_text": ""})
+
+    # They did a POST, so they want the token. Can they have it?
+    can_vote = False
+    try:
+        first_attend = AttendanceRecord.objects.filter(user=request.user).order_by(
+            "date_recorded"
+        )[0]
+        can_vote = datetime.datetime.now(
+            tz=ohio_tz
+        ) > first_attend.date_recorded + datetime.timedelta(hours=24)
+    except IndexError:
+        # No attendance
+        pass
+
+    if not can_vote:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            "You are not allowed to vote. You must have attended one meeting before today.",
+        )
+        return redirect("/elections")
+
+    if request.user.voted:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            "You have already generated your voting token. You cannot regenerate it... hopefully you wrote it down. (Your browser may display it below if it saved it.)",
+        )
+        return redirect("/elections")
+
+    if request.user.affiliation != OSUUser.aff_choices.STUDENT:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            "Only current students can vote. If you are a student, please let an officer know so we can correct your role.",
+        )
+        return redirect("/elections")
+
+    # They are allowed to vote
+    key = base64.b64decode(settings.JWT_SECRET3)
+    token = jwt.encode(
+        {
+            "rand": os.urandom(40).hex(),
+            "date": str(datetime.date.today()),
+        },
+        key,
+        algorithm="RS256",
+    )
+
+    token = "vote:" + token
+
+    request.user.voted = True
+    request.user.save()
+
+    return render(request, "tokens.html", {"token_text": token})

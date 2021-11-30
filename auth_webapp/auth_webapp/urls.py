@@ -29,4 +29,5 @@ urlpatterns = [
     path("attendance/attend", views.attend, name="attend"),
     path("attendance/subscribe", views.subscribe, name="subscribe"),
     path("internal/link_discord", discord_bot_views.link_discord, name="link_discord"),
+    path("elections", views.elections, name="elections"),
 ]

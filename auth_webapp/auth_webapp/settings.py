@@ -29,6 +29,8 @@ SECRET_KEY = os.environ["DJANGO_SECRET"]
 JWT_SECRET1 = os.environ["JWT_SECRET1"]  # shared with bot
 JWT_SECRET2 = os.environ["JWT_SECRET2"]
 
+JWT_SECRET3 = os.environ['JWT_SECRET3']  # elections
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG") == "True"
