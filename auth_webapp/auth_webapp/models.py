@@ -108,5 +108,10 @@ class AttendanceRecord(models.Model):
     user = models.ForeignKey(OSUUser, on_delete=models.CASCADE)
     date_recorded = models.DateTimeField()
 
+    ATTENDANCE_TYPE = models.TextChoices("AttendType", "IN_PERSON ONLINE DEFAULT")
+    attend_type = models.CharField(
+        max_length=20, choices=ATTENDANCE_TYPE.choices, default=ATTENDANCE_TYPE.DEFAULT
+    )
+
 
 # TODO: Add Meeting model and possible per-meeting survey questions or something

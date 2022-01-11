@@ -157,9 +157,17 @@ def attendance(request):
 
 @require_http_methods(["POST"])
 def attend(request):
+    in_person = request.POST.get("attend_type", None) == "in-person"
+    attend_type = (
+        AttendanceRecord.ATTENDANCE_TYPE.IN_PERSON
+        if in_person
+        else AttendanceRecord.ATTENDANCE_TYPE.ONLINE
+    )
     if _user_can_submit_attendance(request.user):
         ar = AttendanceRecord(
-            user=request.user, date_recorded=datetime.datetime.now().astimezone(ohio_tz)
+            user=request.user,
+            date_recorded=datetime.datetime.now().astimezone(ohio_tz),
+            attend_type=attend_type,
         )
         ar.save()
     return redirect("attendance")

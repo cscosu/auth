@@ -3,6 +3,10 @@
 {% if can_attend %}
 <form action="{% url 'attend' %}" method="post">
     {% csrf_token %}
+    <input type="radio" id="in-person" name="attend_type" value="in-person" required>
+    <label for="in-person">In-Person</label><br>
+    <input type="radio" id="online" name="attend_type" value="online" required>
+    <label for="online">Online</label><br>
     <input class="button" type="submit" value="I'm here!">
 </form>
 {% else %}
@@ -12,11 +16,17 @@
 <h4>Past Attendance</h4>
 <table class="table">
     <thead>
-        <tr><th>Date</th></tr>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+        </tr>
     </thead>
     <tbody>
         {% for a in attendance %}
-        <tr><td>{{ a.date_recorded }}</td></tr>
+        <tr>
+            <td>{{ a.date_recorded }}</td>
+            <td>{{ a.attend_type }}</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
