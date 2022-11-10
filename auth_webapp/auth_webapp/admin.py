@@ -1,8 +1,28 @@
+import csv
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import admin
 from .models import OSUUser, AttendanceRecord
 from django import forms
+from django.http import HttpResponse
 
+
+class ExportCsvMixin:
+    def export_as_csv(self, request, queryset):
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export Selected"
 
 class OSUUserChangeForm(forms.ModelForm):
     """Admin form for updating users
@@ -13,7 +33,7 @@ class OSUUserChangeForm(forms.ModelForm):
         model = OSUUser
         fields = ('affiliation', 'is_admin')
 
-class OSUUserAdmin(BaseUserAdmin):
+class OSUUserAdmin(BaseUserAdmin, ExportCsvMixin):
     # The forms to add and change user instances
     form = OSUUserChangeForm
     add_form = None
@@ -33,6 +53,9 @@ class OSUUserAdmin(BaseUserAdmin):
     ordering = ('last_login',)
     filter_horizontal = ()
     readonly_fields = ('shib_id', 'name_num')
+
+    actions = ["export_as_csv"]
+
 
 admin.site.register(OSUUser, OSUUserAdmin)
 admin.site.register(AttendanceRecord)
