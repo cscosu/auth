@@ -206,12 +206,10 @@ def elections(request):
     # They did a POST, so they want the token. Can they have it?
     can_vote = False
     try:
-        first_attend = AttendanceRecord.objects.filter(user=request.user).order_by(
-            "date_recorded"
-        )[0]
-        can_vote = datetime.datetime.now(
-            tz=ohio_tz
-        ) > first_attend.date_recorded + datetime.timedelta(hours=24)
+        attendences = AttendanceRecord.objects.filter(user=request.user).order_by("date_recorded")
+        now = datetime.datetime.now(tz=ohio_tz)
+        august_this_year = datetime.date(now.year, 8, 19)
+        can_vote = attendences[-1].date_recorded > august_this_year and now > attendences[0].date_recorded + datetime.timedelta(hours=24)
     except IndexError:
         # No attendance
         pass
