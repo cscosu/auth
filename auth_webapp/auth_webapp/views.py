@@ -208,8 +208,8 @@ def elections(request):
     try:
         attendences = AttendanceRecord.objects.filter(user=request.user).order_by("date_recorded")
         now = datetime.datetime.now(tz=ohio_tz)
-        august_this_year = datetime.date(now.year, 8, 19)
-        can_vote = attendences[-1].date_recorded > august_this_year and now > attendences[0].date_recorded + datetime.timedelta(hours=24)
+        august_this_year = datetime.datetime.combine(datetime.date(now.year, 8, 19), datetime.datetime.min.time())
+        can_vote = attendences[len(attendences) - 1].date_recorded.timestamp() > august_this_year.timestamp() and now.timestamp() > (attendences[0].date_recorded + datetime.timedelta(hours=24)).timestamp()
     except IndexError:
         # No attendance
         pass
