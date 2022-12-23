@@ -1,4 +1,7 @@
 import csv
+import base64
+import requests as req
+import json
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import admin
 from .models import OSUUser, AttendanceRecord
@@ -23,6 +26,63 @@ class ExportCsvMixin:
         return response
 
     export_as_csv.short_description = "Export Selected"
+
+
+def is_student(user):
+    """Determins if name.num is current student
+
+    Querys API to see if name.num is current student. Returns
+    True if yes, returns False otherwise
+
+    Note: errors if students not found in by API"""
+    API_URL = base64.b64decode("aHR0cDovL2ttZGF0YS5vc3UuZWR1").decode()
+    PEOPLE_URL = '/people'
+
+    req_url = API_URL + PEOPLE_URL + "/" + user + ".json"
+    response = req.get(req_url)
+    if response.status_code == 200:
+        affiliation = json.loads(response.content)["affiliation"]
+        return "Student" in affiliation.split(", ")
+    else:
+        return False
+
+def check_user_alum_queryset(queryset):
+    checked = {}
+    errors = {}
+    for obj in queryset:
+        if obj.affiliation == OSUUser.aff_choices.STUDENT:
+            try:
+                still_student = is_student(obj.name_num)
+                checked[obj.name_num] = still_student
+                if not still_student:
+                    print(f"User {obj.shib_id} no longer student, marking as alumni.")
+                    obj.affiliation = OSUUser.aff_choices.ALUMNI
+                    obj.save()
+            except Exception as e:
+                errors[obj.name_num] = str(e)
+                print(f"User {obj.shib_id} errored when checking student status: {str(e)}. Leaving status as f{str(obj.affiliation)}.")
+
+    return checked, errors
+
+@admin.action(description='Update student/alumi status')
+def check_user_alum(self, request, queryset):
+    """Admin action to update student/alumni status
+
+    will remove student status if deemed not student.
+    Querys an API for studen status
+    Also returns json with list of checked students
+    (called API on name.num) with T/F for student/alumni
+    as well as a list of errors encountered (with name.num)
+    """
+    checked, errors = check_user_alum_queryset(queryset)
+    rtnDict = {}
+    rtnDict["checked"] = checked
+    rtnDict["errors"] = errors
+    rtnJson = json.dumps(rtnDict)
+    response = HttpResponse(content_type="application/json")
+    response.write(rtnJson)
+    return response
+
 
 class OSUUserChangeForm(forms.ModelForm):
     """Admin form for updating users
@@ -54,7 +114,7 @@ class OSUUserAdmin(BaseUserAdmin, ExportCsvMixin):
     filter_horizontal = ()
     readonly_fields = ('shib_id', 'name_num')
 
-    actions = ["export_as_csv"]
+    actions = ["export_as_csv", check_user_alum]
 
 
 admin.site.register(OSUUser, OSUUserAdmin)

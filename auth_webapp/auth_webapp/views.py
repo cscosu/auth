@@ -111,7 +111,7 @@ def debug_login(request):
         shib_id=request.GET["id"],
         defaults={
             "display_name": "test user %s" % request.GET["id"],
-            "name_num": "test.%s" % request.GET["id"],
+            "name_num": "%s" % request.GET["id"],
         },
     )
     if "super" in request.GET and request.GET["super"] == "1":
