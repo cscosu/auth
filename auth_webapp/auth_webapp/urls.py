@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 import auth_webapp.views as views
 import auth_webapp.discord_bot as discord_bot_views
+import auth_webapp.api as api_views
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -30,4 +31,10 @@ urlpatterns = [
     path("attendance/subscribe", views.subscribe, name="subscribe"),
     path("internal/link_discord", discord_bot_views.link_discord, name="link_discord"),
     path("elections", views.elections, name="elections"),
+    path(
+        "api/user/bybuckid/<int:buckid>",
+        api_views.user_by_buckid,
+        name="user_by_buckid",
+    ),
+    path("api/user/bybuckid/<int:buckid>/attend", api_views.attend, name="api_user"),
 ]

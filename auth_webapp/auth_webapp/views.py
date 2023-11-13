@@ -20,8 +20,6 @@ import jwt
 import os
 import base64
 
-ohio_tz = pytz.timezone("America/New_York")
-
 
 def home(request):
     template_data = {"session": request.session}
@@ -126,18 +124,6 @@ def logout_view(request):
     return redirect("home")
 
 
-def _user_can_submit_attendance(user):
-    try:
-        last_attend = AttendanceRecord.objects.filter(user=user).order_by(
-            "-date_recorded"
-        )[0]
-        return datetime.datetime.now(
-            tz=ohio_tz
-        ) > last_attend.date_recorded + datetime.timedelta(hours=2)
-    except IndexError:
-        return True
-
-
 @require_http_methods(["GET"])
 def attendance(request):
     if not request.user.is_authenticated:
@@ -166,7 +152,7 @@ def attend(request):
     if _user_can_submit_attendance(request.user):
         ar = AttendanceRecord(
             user=request.user,
-            date_recorded=datetime.datetime.now().astimezone(ohio_tz),
+            date_recorded=datetime.datetime.now().astimezone(settings.TIMEZONE),
             attend_type=attend_type,
         )
         ar.save()
@@ -206,10 +192,19 @@ def elections(request):
     # They did a POST, so they want the token. Can they have it?
     can_vote = False
     try:
-        attendences = AttendanceRecord.objects.filter(user=request.user).order_by("date_recorded")
-        now = datetime.datetime.now(tz=ohio_tz)
-        august_this_year = datetime.datetime.combine(datetime.date(now.year, 8, 19), datetime.datetime.min.time())
-        can_vote = attendences[len(attendences) - 1].date_recorded.timestamp() > august_this_year.timestamp() and now.timestamp() > (attendences[0].date_recorded + datetime.timedelta(hours=24)).timestamp()
+        attendences = AttendanceRecord.objects.filter(user=request.user).order_by(
+            "date_recorded"
+        )
+        now = datetime.datetime.now(tz=settings.TIMEZONE)
+        august_this_year = datetime.datetime.combine(
+            datetime.date(now.year, 8, 19), datetime.datetime.min.time()
+        )
+        can_vote = (
+            attendences[len(attendences) - 1].date_recorded.timestamp()
+            > august_this_year.timestamp()
+            and now.timestamp()
+            > (attendences[0].date_recorded + datetime.timedelta(hours=24)).timestamp()
+        )
     except IndexError:
         # No attendance
         pass

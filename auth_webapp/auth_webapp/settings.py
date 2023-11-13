@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import pytz
 
 load_dotenv()
 
@@ -29,7 +30,9 @@ SECRET_KEY = os.environ["DJANGO_SECRET"]
 JWT_SECRET1 = os.environ["JWT_SECRET1"]  # shared with bot
 JWT_SECRET2 = os.environ["JWT_SECRET2"]
 
-JWT_SECRET3 = os.environ['JWT_SECRET3']  # elections
+JWT_SECRET3 = os.environ["JWT_SECRET3"]  # elections
+
+API_TOKEN = os.environ["API_TOKEN"]
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -131,6 +134,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+TIMEZONE = pytz.timezone("America/New_York")
 
 
 # Internationalization

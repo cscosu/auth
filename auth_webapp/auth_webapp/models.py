@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.conf import settings
 import mailchimp_marketing as MailchimpMarketing
 from mailchimp_marketing.api_client import ApiClientError
+import datetime
 import os
 import hashlib
 
@@ -101,6 +103,17 @@ class OSUUser(AbstractBaseUser, PermissionsMixin):
 
     def is_active(self):
         return True
+
+    def can_submit_attendance(self):
+        try:
+            last_attend = AttendanceRecord.objects.filter(user=self).order_by(
+                "-date_recorded"
+            )[0]
+            return datetime.datetime.now(
+                tz=settings.TIMEZONE
+            ) > last_attend.date_recorded + datetime.timedelta(hours=2)
+        except IndexError:
+            return True
 
 
 class AttendanceRecord(models.Model):
