@@ -36,5 +36,10 @@ urlpatterns = [
         api_views.user_by_buckid,
         name="user_by_buckid",
     ),
-    path("api/user/bybuckid/<int:buckid>/attend", api_views.attend, name="api_user"),
+    path("api/user/bybuckid/<int:buckid>/attend", api_views.attend, name="api_attend"),
+    path(
+        "api/user/bybuckid/<int:buckid>/discordid",
+        api_views.attend,
+        name="api_set_discordid_by_buckid",
+    ),
 ]

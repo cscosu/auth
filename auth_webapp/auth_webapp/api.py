@@ -11,7 +11,6 @@ def auth(view):
         header = request.headers.get("Authorization")
         if header:
             if header != f"Bearer {settings.API_TOKEN}":
-                print(header)
                 return JsonResponse({"error": "invalid api token"}, status=403)
             return view(request, *args, **kwargs)
         else:
@@ -62,3 +61,44 @@ def attend(request, buckid):
         return JsonResponse({"success": "user attendance recorded"})
     except OSUUser.DoesNotExist:
         return JsonResponse({"error": "not found"}, status=404)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@auth
+def set_discordid_by_buckid(request, buckid):
+    try:
+        discord_id = int(request.body)
+
+        user = OSUUser.objects.get(shib_id=buckid)
+
+        try:
+            discord_linked = OSUUser.objects.get(discord_id=discord_id)
+            print(f"ID is already linked to user {discord_linked.shib_id}")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "msg": "Your discord is already linked to another OSU user. Please contact a club officer and we can fix it up for you.",
+                }
+            )
+        except OSUUser.DoesNotExist:
+            pass
+
+        user = OSUUser.objects.get(shib_id=user_token["buck_id"])
+        if user.discord_id is None:
+            user.discord_id = token["discord_id"]
+            user.save()
+            print(f"Successfully linked {user.discord_id} to shib {user.shib_id}")
+            return JsonResponse({"success": True, "affiliation": user.affiliation})
+        else:
+            print(f"User {user.shib_id} is already linked to another discord user")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "msg": "You already have another discord account linked. Please contact a club officer and we can fix it up for you.",
+                }
+            )
+    except OSUUser.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+    except ValueError:
+        return JsonResponse({"error": "invalid discordid"}, status=400)
