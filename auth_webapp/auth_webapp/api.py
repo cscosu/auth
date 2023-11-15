@@ -4,6 +4,7 @@ from django.views.decorators.http import require_http_methods
 from .models import OSUUser, AttendanceRecord
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 def auth(view):
@@ -36,31 +37,86 @@ def user_by_buckid(request, buckid):
         return JsonResponse({"error": "not found"}, status=404)
 
 
+@auth
+@require_http_methods(["GET"])
+def user_by_discordid(request, discord_id):
+    try:
+        user = OSUUser.objects.get(discord_id=discord_id)
+        return JsonResponse(
+            {
+                "buckid": user.shib_id,
+                "nameDotNumber": user.name_num,
+                "displayName": user.display_name,
+                "discordId": user.discord_id,
+            }
+        )
+    except OSUUser.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+
+@auth
+@require_http_methods(["GET"])
+def user_by_buckid(request, buckid):
+    try:
+        user = OSUUser.objects.get(shib_id=buckid)
+        return JsonResponse(
+            {
+                "buckid": user.shib_id,
+                "nameDotNumber": user.name_num,
+                "displayName": user.display_name,
+                "discordId": user.discord_id,
+            }
+        )
+    except OSUUser.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 @auth
-def attend(request, buckid):
+def attend(request):
+    try:
+        print("got attend request")
+        body = json.loads(request.body)
+        print(body)
+        buckid = int(body["buckid"])
+        name_num = str(body["nameDotNumber"])
+        display_name = str(body["displayName"])
+    except:
+        return JsonResponse({"error": "bad request"}, status=400)
+
     try:
         user = OSUUser.objects.get(shib_id=buckid)
-        in_person = True  # todo: make configurable
-        attend_type = (
-            AttendanceRecord.ATTENDANCE_TYPE.IN_PERSON
-            if in_person
-            else AttendanceRecord.ATTENDANCE_TYPE.ONLINE
-        )
-
-        if user.can_submit_attendance():
-            ar = AttendanceRecord(
-                user=user,
-                date_recorded=datetime.now().astimezone(settings.TIMEZONE),
-                attend_type=attend_type,
-            )
-            ar.save()
-        else:
-            return JsonResponse({"error": "user cannot submit attendance"}, status=403)
-        return JsonResponse({"success": "user attendance recorded"})
+        is_new = False
     except OSUUser.DoesNotExist:
-        return JsonResponse({"error": "not found"}, status=404)
+        user = OSUUser(
+            shib_id=buckid,
+            display_name=display_name,
+            name_num=name_num,
+            affiliation="STUDENT",
+        )
+        user.save()
+        is_new = True
+
+    in_person = True  # todo: make configurable
+    attend_type = (
+        AttendanceRecord.ATTENDANCE_TYPE.IN_PERSON
+        if in_person
+        else AttendanceRecord.ATTENDANCE_TYPE.ONLINE
+    )
+
+    if user.can_submit_attendance():
+        ar = AttendanceRecord(
+            user=user,
+            date_recorded=datetime.now().astimezone(settings.TIMEZONE),
+            attend_type=attend_type,
+        )
+        ar.save()
+    else:
+        return JsonResponse(
+            {"error": "user cannot submit attendance", "isNew": is_new}, status=403
+        )
+    return JsonResponse({"success": "user attendance recorded", "isNew": is_new})
 
 
 @csrf_exempt
@@ -70,23 +126,21 @@ def set_discordid_by_buckid(request, buckid):
     try:
         discord_id = int(request.body)
 
-        user = OSUUser.objects.get(shib_id=buckid)
-
         try:
             discord_linked = OSUUser.objects.get(discord_id=discord_id)
             print(f"ID is already linked to user {discord_linked.shib_id}")
             return JsonResponse(
                 {
-                    "success": False,
-                    "msg": "Your discord is already linked to another OSU user. Please contact a club officer and we can fix it up for you.",
+                    "error": "Your discord is already linked to another OSU user. Please contact a club officer and we can fix it up for you.",
                 }
             )
         except OSUUser.DoesNotExist:
             pass
 
-        user = OSUUser.objects.get(shib_id=user_token["buck_id"])
+        user = OSUUser.objects.get(shib_id=buckid)
+
         if user.discord_id is None:
-            user.discord_id = token["discord_id"]
+            user.discord_id = discord_id
             user.save()
             print(f"Successfully linked {user.discord_id} to shib {user.shib_id}")
             return JsonResponse({"success": True, "affiliation": user.affiliation})
@@ -94,8 +148,7 @@ def set_discordid_by_buckid(request, buckid):
             print(f"User {user.shib_id} is already linked to another discord user")
             return JsonResponse(
                 {
-                    "success": False,
-                    "msg": "You already have another discord account linked. Please contact a club officer and we can fix it up for you.",
+                    "error": "You already have another discord account linked. Please contact a club officer and we can fix it up for you.",
                 }
             )
     except OSUUser.DoesNotExist:
