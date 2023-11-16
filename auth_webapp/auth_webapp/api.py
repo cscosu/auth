@@ -128,29 +128,31 @@ def set_discordid_by_buckid(request, buckid):
 
         try:
             discord_linked = OSUUser.objects.get(discord_id=discord_id)
-            print(f"ID is already linked to user {discord_linked.shib_id}")
-            return JsonResponse(
-                {
-                    "error": "Your discord is already linked to another OSU user. Please contact a club officer and we can fix it up for you.",
-                }
-            )
+
+            if discord_linked.shib_id != buckid:
+                print(f"ID is already linked to user {discord_linked.shib_id}")
+                return JsonResponse(
+                    {
+                        "error": "Your discord is already linked to another OSU user.",
+                    }
+                )
         except OSUUser.DoesNotExist:
             pass
 
         user = OSUUser.objects.get(shib_id=buckid)
 
-        if user.discord_id is None:
-            user.discord_id = discord_id
-            user.save()
-            print(f"Successfully linked {user.discord_id} to shib {user.shib_id}")
-            return JsonResponse({"success": True, "affiliation": user.affiliation})
-        else:
-            print(f"User {user.shib_id} is already linked to another discord user")
-            return JsonResponse(
-                {
-                    "error": "You already have another discord account linked. Please contact a club officer and we can fix it up for you.",
-                }
-            )
+        old_discord = user.discord_id  # possibly None
+        user.discord_id = discord_id
+        user.save()
+        print(f"Successfully linked {user.discord_id} to shib {user.shib_id}")
+        return JsonResponse(
+            {
+                "success": True,
+                "affiliation": user.affiliation,
+                "oldDiscord": old_discord,
+            }
+        )
+
     except OSUUser.DoesNotExist:
         return JsonResponse({"error": "not found"}, status=404)
     except ValueError:
