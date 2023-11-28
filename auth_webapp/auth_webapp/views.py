@@ -132,7 +132,7 @@ def attendance(request):
         request,
         "attendance.html",
         {
-            "can_attend": _user_can_submit_attendance(request.user),
+            "can_attend": request.user.can_submit_attendance(),
             "can_subscribe": not request.user.is_currently_on_mailing_list(),
             "attendance": AttendanceRecord.objects.filter(user=request.user).order_by(
                 "-date_recorded"
@@ -149,7 +149,7 @@ def attend(request):
         if in_person
         else AttendanceRecord.ATTENDANCE_TYPE.ONLINE
     )
-    if _user_can_submit_attendance(request.user):
+    if request.user.can_submit_attendance():
         ar = AttendanceRecord(
             user=request.user,
             date_recorded=datetime.datetime.now().astimezone(settings.TIMEZONE),
