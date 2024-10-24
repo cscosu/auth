@@ -1,3 +1,7 @@
 /keys
 /tmp
 /tlskeys
+
+*.db
+*.db-shm
+*.db-wal

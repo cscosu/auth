@@ -2,14 +2,20 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/k0kubun/pp/v3"
+	_ "modernc.org/sqlite"
 )
 
 func hello(s AuthProvider) func(w http.ResponseWriter, r *http.Request) {
@@ -19,12 +25,44 @@ func hello(s AuthProvider) func(w http.ResponseWriter, r *http.Request) {
 		attributes := s.attributesFromContext(r.Context())
 		pp.Println(attributes)
 
-		fmt.Fprintf(w, "Hello, %s!", attributes.GivenName)
+		fmt.Fprintf(w, "Bye, %s!", attributes.GivenName)
 	}
 }
 
+//go:embed migrations/*
+var migrations embed.FS
+
 func main() {
 	mux := http.NewServeMux()
+
+	db, err := sql.Open("sqlite", "./auth.db")
+
+	if err != nil {
+		log.Fatalln("Failed to load the database:", err)
+	}
+
+	dirs, err := migrations.ReadDir("migrations")
+
+	if err != nil {
+		log.Fatalln("Failed to read migrations directory:", err)
+	}
+
+	slices.SortStableFunc(dirs, func(a fs.DirEntry, b fs.DirEntry) int {
+		return strings.Compare(a.Name(), b.Name())
+	})
+
+	for _, entry := range dirs {
+		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
+		if err != nil {
+			log.Fatalln("Failed to read", entry.Name(), err)
+		}
+		sql := string(data)
+		fmt.Println(sql)
+		_, err = db.Exec(sql)
+		if err != nil {
+			log.Fatalln("Failed to run", entry.Name(), err)
+		}
+	}
 
 	authEnvironment := os.Getenv("ENV")
 	var authProvider AuthProvider
