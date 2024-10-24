@@ -1,0 +1,18 @@
+services:
+  auth:
+    ports:
+      - 3000:3000
+    build:
+      dockerfile: Dockerfile.dev
+    command: air
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - .git/
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum

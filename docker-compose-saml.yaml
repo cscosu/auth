@@ -1,0 +1,24 @@
+services:
+  auth:
+    ports:
+      - 443:443
+    build:
+      dockerfile: Dockerfile.dev
+    command: air
+    volumes:
+      - ./keys:/app/keys
+      - ./tlskeys:/app/tlskeys
+    environment:
+      - ENV=saml
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - tlskeys
+            - .git/
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum
