@@ -209,17 +209,6 @@ func main() {
 
 	db, err := sql.Open("sqlite", "./auth.db")
 
-	bot := &DiscordBot{
-		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
-		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
-		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
-		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
-		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
-		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
-		Db:            db,
-	}
-	bot.Connect()
-
 	if err != nil {
 		log.Fatalln("Failed to load the database:", err)
 	}
@@ -249,6 +238,17 @@ func main() {
 			log.Fatalln("Failed to run", entry.Name(), err)
 		}
 	}
+
+	bot := &DiscordBot{
+		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
+		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
+		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
+		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
+		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
+		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
+		Db:            db,
+	}
+	bot.Connect()
 
 	authEnvironment := os.Getenv("ENV")
 	var authProvider AuthProvider

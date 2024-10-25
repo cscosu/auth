@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"net/url"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -25,9 +27,16 @@ var (
 		// Commands/options without description will fail the registration
 		// of the command.
 		{
-			Name: "about",
-
-			Description: "Lookup information about a discord user",
+			Name:        "about",
+			Description: "Lookup information about a discord user who has linked their OSU account",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User",
+					Required:    true,
+				},
+			},
 		},
 	}
 
@@ -36,10 +45,58 @@ var (
 			if !requireAdmin(b, i) {
 				return
 			}
+			options := i.ApplicationCommandData().Options
+			user := options[0].UserValue(nil)
+
+			row := b.Db.QueryRow(`SELECT name_num, display_name, last_login, student, alum, employee, faculty FROM users WHERE discord_id = ?`, user.ID)
+			var (
+				nameNum     string
+				displayName string
+				lastLogin   int
+				student     bool
+				alum        bool
+				employee    bool
+				faculty     bool
+			)
+			err := row.Scan(&nameNum, &displayName, &lastLogin, &student, &alum, &employee, &faculty)
+			if err != nil {
+				b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "User has not linked their OSU account",
+					},
+				})
+				return
+			}
+			content := fmt.Sprintf("**[%s (%s)](<https://www.osu.edu/search/?query=%s>)**\nLast login: <t:%d:f>\n",
+				displayName,
+				nameNum,
+				url.QueryEscape(nameNum),
+				lastLogin,
+			)
+
+			sep := ""
+			if student {
+				content += sep + "Student"
+				sep = ", "
+			}
+			if alum {
+				content += sep + "Alum"
+				sep = ", "
+			}
+			if employee {
+				content += sep + "Employee"
+				sep = ", "
+			}
+			if faculty {
+				content += sep + "Faculty"
+				sep = ", "
+			}
+
 			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "This command has not been finished",
+					Content: content,
 				},
 			})
 		},
