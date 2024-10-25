@@ -89,7 +89,7 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 func generateStateOauthCookie(w http.ResponseWriter) string {
 	var expiration = time.Now().Add(2 * time.Hour)
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
 	cookie := http.Cookie{Name: OAUTH_STATE_COOKIE, Value: state, Expires: expiration}
 	http.SetCookie(w, &cookie)

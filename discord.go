@@ -60,7 +60,7 @@ var (
 			)
 			err := row.Scan(&nameNum, &displayName, &lastLogin, &student, &alum, &employee, &faculty)
 			if err != nil {
-				b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				_ = b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "User has not linked their OSU account",
@@ -92,7 +92,7 @@ var (
 				content += sep + "Faculty"
 			}
 
-			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			_ = b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: content,
@@ -113,7 +113,7 @@ func (b *DiscordBot) isAdmin(m *discordgo.Member) bool {
 
 func (b *DiscordBot) requireAdmin(i *discordgo.InteractionCreate) bool {
 	if !b.isAdmin(i.Member) {
-		b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "This command requires admin",
