@@ -1,12 +1,18 @@
 FROM golang:1.23.2-alpine
 
+RUN apk add make curl
+
 WORKDIR /app
 
 RUN go install github.com/air-verse/air@latest
 
+COPY Makefile ./
+RUN make prepare
+
 COPY go.mod go.sum ./
 RUN go mod download
 
+COPY static/ /app/static/
 COPY . /app
 
 CMD ["air", "-c", ".air.toml"]

@@ -33,6 +33,7 @@ type AuthProvider interface {
 	attributesFromContext(ctx context.Context) *OSUAttributes
 	requireAuth(handler http.Handler) http.Handler
 	globalLogout(w http.ResponseWriter, r *http.Request)
+	logout(w http.ResponseWriter, r *http.Request)
 }
 
 type MockAuthProvider struct{}
@@ -57,6 +58,9 @@ func (m MockAuthProvider) requireAuth(handler http.Handler) http.Handler {
 func (m MockAuthProvider) globalLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Location", "https://webauth.service.ohio-state.edu/cgi-bin/logout.cgi")
 	w.WriteHeader(http.StatusFound)
+}
+
+func (m MockAuthProvider) logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockAuthProvider() *MockAuthProvider {

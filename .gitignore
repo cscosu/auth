@@ -5,3 +5,6 @@
 *.db
 *.db-shm
 *.db-wal
+
+main
+tailwindcss

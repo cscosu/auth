@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     buck_id INTEGER,
     name_num TEXT NOT NULL,
     display_name TEXT NOT NULL,
-    last_login INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    last_signin INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     
     -- 0 or 1 depending on if the user has the affiliation
     student INTEGER NOT NULL,

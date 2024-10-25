@@ -7,6 +7,7 @@ RUN go build -o main .
 
 FROM alpine:latest
 WORKDIR /app
+COPY static/ /app/static/
 COPY --from=0 /app/main main
 COPY keys/sp-cert.pem keys/sp-cert.pem
 COPY keys/sp-key.pem keys/sp-key.pem

@@ -39,12 +39,23 @@ func (s SamlAuthProvider) requireAuth(handler http.Handler) http.Handler {
 func (s *SamlAuthProvider) globalLogout(w http.ResponseWriter, r *http.Request) {
 	err := s.samlSP.Session.DeleteSession(w, r)
 	if err != nil {
-		panic(err) // TODO handle error
+		log.Println("Failed to delete session:", err)
+		return
 	}
 
 	w.Header().Add("Location", "https://webauth.service.ohio-state.edu/cgi-bin/logout.cgi")
 	w.WriteHeader(http.StatusFound)
 }
+
+func (s *SamlAuthProvider) logout(w http.ResponseWriter, r *http.Request) {
+	err := s.samlSP.Session.DeleteSession(w, r)
+	if err != nil {
+		log.Println("Failed to delete session:", err)
+		return
+	}
+}
+
+const SAML_COOKIE_NAME string = "_saml"
 
 func samlAuthProvider(mux *http.ServeMux, rootURL *url.URL, keyPair *tls.Certificate) (*SamlAuthProvider, error) {
 	var err error
@@ -69,7 +80,7 @@ func samlAuthProvider(mux *http.ServeMux, rootURL *url.URL, keyPair *tls.Certifi
 		Key:         keyPair.PrivateKey.(*rsa.PrivateKey),
 		Certificate: keyPair.Leaf,
 		IDPMetadata: idpMetadata,
-		CookieName:  "_saml",
+		CookieName:  SAML_COOKIE_NAME,
 	})
 	if err != nil {
 		return nil, err

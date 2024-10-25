@@ -89,7 +89,21 @@ func (r *Router) signin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Hello, %s!", attributes.GivenName)
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
+}
+
+func (r *Router) signout(w http.ResponseWriter, req *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     AUTH_COOKIE_NAME,
+		HttpOnly: true,
+		Value:    "",
+		MaxAge:   -1,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	r.authProvider.logout(w, req)
+
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 }
 
 func getUserIDFromContext(ctx context.Context) (string, bool) {
@@ -98,21 +112,33 @@ func getUserIDFromContext(ctx context.Context) (string, bool) {
 	return userId, ok
 }
 
-func (r *Router) hello(w http.ResponseWriter, req *http.Request) {
+func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	userId, hasUserId := getUserIDFromContext(req.Context())
 
 	if hasUserId {
-		row := r.db.QueryRow("SELECT display_name FROM users WHERE idm_id = ?", userId)
-		var displayName string
-		err := row.Scan(&displayName)
+		row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+		var nameNum string
+		err := row.Scan(&nameNum)
 		if err != nil {
-			log.Println("Failed to get user:", err)
-			http.Error(w, "Failed to get user", http.StatusInternalServerError)
+			log.Println("Failed to get user:", err, userId)
+			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
 			return
 		}
-		fmt.Fprintf(w, "Hello, %s!", displayName)
+		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
+			"nameNum": nameNum,
+		})
+		if err != nil {
+			log.Println("Failed to render template:", err)
+			http.Error(w, "Failed to render template", http.StatusInternalServerError)
+			return
+		}
 	} else {
-		fmt.Fprintln(w, "Hello, unknown user!")
+		err := Templates.ExecuteTemplate(w, "index-unauthed.html.tpl", nil)
+		if err != nil {
+			log.Println("Failed to render template:", err)
+			http.Error(w, "Failed to render template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -236,10 +262,10 @@ func main() {
 		jwtSecret:    []byte(jwtSecret),
 	}
 
-	mux.Handle("/hello", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.hello))))
-	// mux.Handle("/hello", router.InjectJwtMiddleware(http.HandlerFunc(router.hello)))
+	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/signin", authProvider.requireAuth(http.HandlerFunc(router.signin)))
-	mux.Handle("/logout", authProvider.requireAuth(http.HandlerFunc(authProvider.globalLogout)))
+	mux.Handle("/signout", http.HandlerFunc(router.signout))
 
 	if authEnvironment == "saml" {
 		log.Println("Starting server on :443. Visit https://auth-test.osucyber.club and accept the self-signed certificate")
