@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -197,6 +198,13 @@ func (r *Router) EnforceJwtMiddleware(handler http.Handler) http.Handler {
 var migrations embed.FS
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalln("Failed to load .env", err)
+	}
+
+	go discordBot()
+
 	mux := http.NewServeMux()
 
 	db, err := sql.Open("sqlite", "./auth.db")
