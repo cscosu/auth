@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     alum INTEGER NOT NULL,
     employee INTEGER NOT NULL,
     faculty INTEGER NOT NULL
-);
+) WITHOUT ROWID;
 
 CREATE INDEX IF NOT EXISTS users_discord_id ON users (discord_id);
 CREATE INDEX IF NOT EXISTS users_buck_id ON users (buck_id);
@@ -28,6 +28,6 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     PRIMARY KEY (user_id, timestamp),
     FOREIGN KEY (user_id) REFERENCES users(idm_id)
-);
+) WITHOUT ROWID;
 
 COMMIT;

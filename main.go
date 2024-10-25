@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/k0kubun/pp/v3"
 	_ "modernc.org/sqlite"
 )
 
@@ -31,7 +30,6 @@ const AUTH_COOKIE_NAME string = "csc-auth"
 func (r *Router) signin(w http.ResponseWriter, req *http.Request) {
 	attributes := r.authProvider.attributesFromContext(req.Context())
 
-	pp.Println(attributes)
 	now := time.Now()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -75,10 +73,15 @@ func (r *Router) signin(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	r.db.Exec(`
+	_, err = r.db.Exec(`
 		INSERT OR REPLACE INTO users (idm_id, buck_id, name_num, display_name, student, alum, employee, faculty)
 		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
 	`, attributes.IDMUID, attributes.BuckID, nameNum, attributes.DisplayName, student, alum, employee, faculty)
+	if err != nil {
+		log.Println("Failed to upsert user:", err)
+		http.Error(w, "Failed to sign in. Contact an admin", http.StatusInternalServerError)
+		return
+	}
 
 	redirect := req.URL.Query().Get("redirect")
 	if redirect != "" {
@@ -101,7 +104,12 @@ func (r *Router) hello(w http.ResponseWriter, req *http.Request) {
 	if hasUserId {
 		row := r.db.QueryRow("SELECT display_name FROM users WHERE idm_id = ?", userId)
 		var displayName string
-		row.Scan(&displayName)
+		err := row.Scan(&displayName)
+		if err != nil {
+			log.Println("Failed to get user:", err)
+			http.Error(w, "Failed to get user", http.StatusInternalServerError)
+			return
+		}
 		fmt.Fprintf(w, "Hello, %s!", displayName)
 	} else {
 		fmt.Fprintln(w, "Hello, unknown user!")
