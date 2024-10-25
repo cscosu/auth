@@ -64,6 +64,8 @@ func getTlsCert() (*tls.Certificate, error) {
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
 
+	os.MkdirAll("tlskeys", 0700)
+
 	if err := os.WriteFile("tlskeys/auth-test-osucyber-club-selfsigned-key.pem", privateKeyPEM, 0600); err != nil {
 		return nil, err
 	}

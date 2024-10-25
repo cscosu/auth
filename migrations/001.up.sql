@@ -11,13 +11,17 @@ CREATE TABLE IF NOT EXISTS users (
     name_num TEXT NOT NULL,
     display_name TEXT NOT NULL,
     last_login INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-    -- Student, allumni, or employee
-    affiliation TEXT NOT NULL
+    
+    -- 0 or 1 depending on if the user has the affiliation
+    student INTEGER NOT NULL,
+    alum INTEGER NOT NULL,
+    employee INTEGER NOT NULL,
+    faculty INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS users_discord_id ON users (discord_id);
 CREATE INDEX IF NOT EXISTS users_buck_id ON users (buck_id);
-CREATE INDEX IF NOT EXISTS users_affiliation ON users (affiliation);
+CREATE INDEX IF NOT EXISTS users_student ON users (student);
 
 CREATE TABLE IF NOT EXISTS attendance_records (
     user_id INTEGER NOT NULL,
