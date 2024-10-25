@@ -206,11 +206,12 @@ func main() {
 	}
 
 	bot := &DiscordBot{
-		Token:        os.Getenv("DISCORD_BOT_TOKEN"),
-		GuildId:      os.Getenv("DISCORD_GUILD_ID"),
-		AdminRoleId:  os.Getenv("DISCORD_ADMIN_ROLE_ID"),
-		ClientId:     os.Getenv("DISCORD_CLIENT_ID"),
-		ClientSecret: os.Getenv("DISCORD_CLIENT_SECRET"),
+		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
+		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
+		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
+		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
+		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
+		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
 	}
 	bot.Connect()
 

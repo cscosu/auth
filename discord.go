@@ -7,11 +7,12 @@ import (
 )
 
 type DiscordBot struct {
-	Token        string
-	GuildId      string
-	AdminRoleId  string
-	ClientId     string
-	ClientSecret string
+	Token         string
+	GuildId       string
+	AdminRoleId   string
+	StudentRoleId string
+	ClientId      string
+	ClientSecret  string
 
 	Session *discordgo.Session
 }
@@ -126,4 +127,19 @@ func (b *DiscordBot) Connect() {
 		}
 		registeredCommands[i] = cmd
 	}
+}
+
+func (b *DiscordBot) GiveStudentRole(discordId string) error {
+	return b.Session.GuildMemberRoleAdd(b.GuildId, discordId, b.StudentRoleId)
+}
+
+func (b *DiscordBot) AddStudentToGuild(discordId string, accessToken string) error {
+	return b.Session.GuildMemberAdd(b.GuildId, discordId, &discordgo.GuildMemberAddParams{
+		AccessToken: accessToken,
+		Roles:       []string{b.StudentRoleId},
+	})
+}
+
+func (b *DiscordBot) RemoveStudentRole(discordId string) error {
+	return b.Session.GuildMemberRoleRemove(b.GuildId, discordId, b.StudentRoleId)
 }

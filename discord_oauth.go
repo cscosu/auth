@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,7 +17,7 @@ import (
 func (r *Router) DiscordSignin(w http.ResponseWriter, req *http.Request) {
 	state := generateStateOauthCookie(w)
 	redirectUri := fmt.Sprintf("%s/discord/callback", r.rootURL)
-	url := fmt.Sprintf("https://discord.com/oauth2/authorize?client_id=%s&response_type=code&redirect_uri=%v&scope=identify&state=%v", r.bot.ClientId, url.QueryEscape(redirectUri), state)
+	url := fmt.Sprintf("https://discord.com/oauth2/authorize?client_id=%s&response_type=code&redirect_uri=%v&scope=identify+guilds.join&state=%v", r.bot.ClientId, url.QueryEscape(redirectUri), state)
 	http.Redirect(w, req, url, http.StatusTemporaryRedirect)
 }
 
@@ -39,13 +40,47 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	code := req.URL.Query().Get("code")
 	authToken, err := getDiscordAuthToken(r.rootURL, r.bot, code)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+		log.Println(err)
+		http.Error(w, "Error getting discord auth token", http.StatusForbidden)
+		return
 	}
 
 	discordUser, err := getDiscordUser(authToken)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+		log.Println(err)
+		http.Error(w, "Error getting user information", http.StatusForbidden)
+		return
 	}
+
+	userId, hasUserId := getUserIDFromContext(req.Context())
+	if !hasUserId {
+		http.Error(w, "Not logged with OSU account", http.StatusForbidden)
+		return
+	}
+
+	row := r.db.QueryRow("SELECT discord_id FROM users WHERE idm_id = ?", userId)
+
+	var oldDiscordId sql.NullString
+	err = row.Scan(&oldDiscordId)
+	if err != nil {
+		log.Println("Failed to get user:", err)
+		http.Error(w, "Failed to get user", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = r.db.Exec("UPDATE users SET discord_id = ? WHERE idm_id = ?", discordUser.ID, userId)
+	if err != nil {
+		log.Println("Failed to update user:", err)
+		http.Error(w, "Failed to update discord", http.StatusInternalServerError)
+		return
+	}
+
+	if oldDiscordId.Valid {
+		fmt.Fprintf(w, "Removed old discord %v\n", oldDiscordId.String)
+		_ = r.bot.RemoveStudentRole(oldDiscordId.String)
+	}
+	_ = r.bot.AddStudentToGuild(discordUser.ID, authToken)
+	_ = r.bot.GiveStudentRole(discordUser.ID)
 
 	fmt.Fprintf(w, "You are %s, id = %s", discordUser.Username, discordUser.ID)
 }
