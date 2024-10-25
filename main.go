@@ -278,6 +278,8 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/signin", authProvider.requireAuth(http.HandlerFunc(router.signin)))
 	mux.Handle("/signout", http.HandlerFunc(router.signout))
+	mux.Handle("/discord/signin", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.DiscordSignin))))
+	mux.Handle("/discord/callback", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.DiscordCallback))))
 
 	if authEnvironment == "saml" {
 		log.Println("Starting server on :443. Visit https://auth-test.osucyber.club and accept the self-signed certificate")
