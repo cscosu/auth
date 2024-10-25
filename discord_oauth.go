@@ -24,17 +24,22 @@ func (r *Router) DiscordSignin(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
+	userId, _ := getUserIDFromContext(req.Context())
+
 	stateCookie, err := req.Cookie(OAUTH_STATE_COOKIE)
 	if err != nil {
+		log.Println("Discord callback: Missing oauth state cookie. User id =", userId)
 		http.Error(w, "Missing oauthstate cookie", http.StatusBadRequest)
 		return
 	}
 	stateParam := req.URL.Query().Get("state")
 	if stateParam == "" {
+		log.Println("Discord callback: Missing state url parameter. User id =", userId)
 		http.Error(w, "Missing state url parameter", http.StatusBadRequest)
 		return
 	}
 	if stateCookie.Value != stateParam {
+		log.Println("Discord callback: State cookie and state parameter don't match. State cookie =", stateCookie.Value, ", state param =", stateParam, "User id =", userId)
 		http.Error(w, "State cookie and state parameter don't match", http.StatusBadRequest)
 		return
 	}
@@ -42,21 +47,15 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	code := req.URL.Query().Get("code")
 	authToken, err := getDiscordAuthToken(r.rootURL, r.bot, code)
 	if err != nil {
-		log.Println(err)
+		log.Println("Discord callback: Error getting discord auth token:", err, "User id =", userId)
 		http.Error(w, "Error getting discord auth token", http.StatusForbidden)
 		return
 	}
 
 	discordUser, err := getDiscordUser(authToken)
 	if err != nil {
-		log.Println(err)
+		log.Println("Discord callback: Error getting discord user:", err, "User id =", userId)
 		http.Error(w, "Error getting user information", http.StatusForbidden)
-		return
-	}
-
-	userId, hasUserId := getUserIDFromContext(req.Context())
-	if !hasUserId {
-		http.Error(w, "Not logged with OSU account", http.StatusForbidden)
 		return
 	}
 

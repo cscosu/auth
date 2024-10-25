@@ -90,7 +90,6 @@ var (
 			}
 			if faculty {
 				content += sep + "Faculty"
-				sep = ", "
 			}
 
 			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
