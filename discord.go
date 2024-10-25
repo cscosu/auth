@@ -42,7 +42,7 @@ var (
 
 	commandHandlers = map[string]func(b *DiscordBot, i *discordgo.InteractionCreate){
 		"about": func(b *DiscordBot, i *discordgo.InteractionCreate) {
-			if !requireAdmin(b, i) {
+			if !b.requireAdmin(i) {
 				return
 			}
 			options := i.ApplicationCommandData().Options
@@ -103,7 +103,7 @@ var (
 	}
 )
 
-func isAdmin(b *DiscordBot, m *discordgo.Member) bool {
+func (b *DiscordBot) isAdmin(m *discordgo.Member) bool {
 	for _, role := range m.Roles {
 		if role == b.AdminRoleId {
 			return true
@@ -112,8 +112,8 @@ func isAdmin(b *DiscordBot, m *discordgo.Member) bool {
 	return false
 }
 
-func requireAdmin(b *DiscordBot, i *discordgo.InteractionCreate) bool {
-	if !isAdmin(b, i.Member) {
+func (b *DiscordBot) requireAdmin(i *discordgo.InteractionCreate) bool {
+	if !b.isAdmin(i.Member) {
 		b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
