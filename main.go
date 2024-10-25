@@ -119,16 +119,18 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	userId, hasUserId := getUserIDFromContext(req.Context())
 
 	if hasUserId {
-		row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+		row := r.db.QueryRow("SELECT name_num, discord_id FROM users WHERE idm_id = ?", userId)
 		var nameNum string
-		err := row.Scan(&nameNum)
+		var discordId sql.NullString
+		err := row.Scan(&nameNum, &discordId)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
 			return
 		}
 		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
-			"nameNum": nameNum,
+			"nameNum":          nameNum,
+			"hasLinkedDiscord": discordId.Valid,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)

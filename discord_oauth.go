@@ -77,13 +77,12 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if oldDiscordId.Valid {
-		fmt.Fprintf(w, "Removed old discord %v\n", oldDiscordId.String)
 		_ = r.bot.RemoveStudentRole(oldDiscordId.String)
 	}
 	_ = r.bot.AddStudentToGuild(discordUser.ID, authToken)
 	_ = r.bot.GiveStudentRole(discordUser.ID)
 
-	fmt.Fprintf(w, "You are %s, id = %s", discordUser.Username, discordUser.ID)
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 }
 
 func generateStateOauthCookie(w http.ResponseWriter) string {
