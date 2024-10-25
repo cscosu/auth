@@ -59,13 +59,20 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	row := r.db.QueryRow("SELECT discord_id FROM users WHERE idm_id = ?", userId)
+	tx, err := r.db.Begin()
+	if err != nil {
+		log.Println("Discord callback: Failed to start transaction", err, "User id =", userId)
+		http.Error(w, "ailed to get user", http.StatusForbidden)
+		return
+	}
+	row := tx.QueryRow("SELECT discord_id FROM users WHERE idm_id = ?", userId)
 
 	var oldDiscordId sql.NullString
 	err = row.Scan(&oldDiscordId)
 	if err != nil {
 		log.Println("Discord callback: failed to get old discord id:", err)
 		http.Error(w, "Failed to get user", http.StatusInternalServerError)
+		_ = tx.Rollback()
 		return
 	}
 
@@ -73,6 +80,15 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println("Discord callback: failed to update user:", err)
 		http.Error(w, "Failed to update discord", http.StatusInternalServerError)
+		_ = tx.Rollback()
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("Discord callback: failed to commit transcation:", err)
+		http.Error(w, "Failed to update discord", http.StatusInternalServerError)
+		_ = tx.Rollback()
 		return
 	}
 
