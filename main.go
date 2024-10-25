@@ -205,6 +205,10 @@ func main() {
 		log.Fatalln("Failed to load .env", err)
 	}
 
+	mux := http.NewServeMux()
+
+	db, err := sql.Open("sqlite", "./auth.db")
+
 	bot := &DiscordBot{
 		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
 		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
@@ -212,12 +216,9 @@ func main() {
 		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
 		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
 		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
+		Db:            db,
 	}
 	bot.Connect()
-
-	mux := http.NewServeMux()
-
-	db, err := sql.Open("sqlite", "./auth.db")
 
 	if err != nil {
 		log.Fatalln("Failed to load the database:", err)

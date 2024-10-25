@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/bwmarrin/discordgo"
@@ -13,6 +14,7 @@ type DiscordBot struct {
 	StudentRoleId string
 	ClientId      string
 	ClientSecret  string
+	Db            *sql.DB
 
 	Session *discordgo.Session
 }
@@ -25,12 +27,7 @@ var (
 		{
 			Name: "about",
 
-			Description: "admin only - lookup all data about a user",
-		},
-		{
-			Name: "archive-channel",
-
-			Description: "admin only - archive a channel",
+			Description: "Lookup information about a discord user",
 		},
 	}
 
@@ -39,14 +36,6 @@ var (
 			if !requireAdmin(b, i) {
 				return
 			}
-			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "This command has not been finished",
-				},
-			})
-		},
-		"archive-channel": func(b *DiscordBot, i *discordgo.InteractionCreate) {
 			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
