@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const OAUTH_STATE_COOKIE = "oauthstate"
+
 func (r *Router) DiscordSignin(w http.ResponseWriter, req *http.Request) {
 	state := generateStateOauthCookie(w)
 	redirectUri := fmt.Sprintf("%s/discord/callback", r.rootURL)
@@ -22,7 +24,7 @@ func (r *Router) DiscordSignin(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
-	stateCookie, err := req.Cookie("oauthstate")
+	stateCookie, err := req.Cookie(OAUTH_STATE_COOKIE)
 	if err != nil {
 		http.Error(w, "Missing oauthstate cookie", http.StatusBadRequest)
 		return
@@ -90,7 +92,7 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	cookie := http.Cookie{Name: "oauthstate", Value: state, Expires: expiration}
+	cookie := http.Cookie{Name: OAUTH_STATE_COOKIE, Value: state, Expires: expiration}
 	http.SetCookie(w, &cookie)
 	return state
 }
