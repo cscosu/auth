@@ -47,8 +47,9 @@ var (
 			}
 			options := i.ApplicationCommandData().Options
 			user := options[0].UserValue(nil)
+			discordId := user.ID
 
-			row := b.Db.QueryRow(`SELECT name_num, display_name, last_login, student, alum, employee, faculty FROM users WHERE discord_id = ?`, user.ID)
+			row := b.Db.QueryRow(`SELECT name_num, display_name, last_signin, student, alum, employee, faculty FROM users WHERE discord_id = ?`, discordId)
 			var (
 				nameNum     string
 				displayName string
@@ -60,6 +61,7 @@ var (
 			)
 			err := row.Scan(&nameNum, &displayName, &lastLogin, &student, &alum, &employee, &faculty)
 			if err != nil {
+				log.Println("/about command: discordId =", discordId, err)
 				_ = b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{

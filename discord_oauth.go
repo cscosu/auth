@@ -64,14 +64,14 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	var oldDiscordId sql.NullString
 	err = row.Scan(&oldDiscordId)
 	if err != nil {
-		log.Println("Failed to get user:", err)
+		log.Println("Discord callback: failed to get old discord id:", err)
 		http.Error(w, "Failed to get user", http.StatusInternalServerError)
 		return
 	}
 
 	_, err = r.db.Exec("UPDATE users SET discord_id = ? WHERE idm_id = ?", discordUser.ID, userId)
 	if err != nil {
-		log.Println("Failed to update user:", err)
+		log.Println("Discord callback: failed to update user:", err)
 		http.Error(w, "Failed to update discord", http.StatusInternalServerError)
 		return
 	}
