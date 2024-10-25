@@ -15,8 +15,8 @@ import (
 
 func (r *Router) DiscordSignin(w http.ResponseWriter, req *http.Request) {
 	state := generateStateOauthCookie(w)
-	redirectUri := "http://localhost:3000/discord/callback"
-	url := fmt.Sprintf("https://discord.com/oauth2/authorize?client_id=1172564200007155903&response_type=code&redirect_uri=%v&scope=identify&state=%v", url.QueryEscape(redirectUri), state)
+	redirectUri := fmt.Sprintf("%s/discord/callback", r.rootURL)
+	url := fmt.Sprintf("https://discord.com/oauth2/authorize?client_id=%s&response_type=code&redirect_uri=%v&scope=identify&state=%v", r.bot.ClientId, url.QueryEscape(redirectUri), state)
 	http.Redirect(w, req, url, http.StatusTemporaryRedirect)
 }
 
@@ -37,7 +37,7 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	code := req.URL.Query().Get("code")
-	authToken, err := getDiscordAuthToken(code)
+	authToken, err := getDiscordAuthToken(r.rootURL, r.bot, code)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -60,18 +60,19 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	return state
 }
 
-func getDiscordAuthToken(code string) (string, error) {
+func getDiscordAuthToken(rootURL *url.URL, b *DiscordBot, code string) (string, error) {
+	redirectUri := fmt.Sprintf("%s/discord/callback", rootURL)
+
 	data := url.Values{
-		"client_id":     {"1172564200007155903"},
-		"client_secret": {"wOp5aVQOsnO0I3_Nt6a3hQyVz-LTqLaz"},
+		"client_id":     {b.ClientId},
+		"client_secret": {b.ClientSecret},
 		"grant_type":    {"authorization_code"},
 		"code":          {code},
-		"redirect_uri":  {"http://localhost:3000/discord/callback"},
+		"redirect_uri":  {redirectUri},
 	}
 
 	req, err := http.NewRequest("POST", "https://discord.com/api/oauth2/token", bytes.NewBufferString(data.Encode()))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

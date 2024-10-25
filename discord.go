@@ -2,24 +2,21 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func getenv(name string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		log.Fatalln(name, "environment variable not defined")
-	}
-	return value
+type DiscordBot struct {
+	Token        string
+	GuildId      string
+	AdminRoleId  string
+	ClientId     string
+	ClientSecret string
+
+	Session *discordgo.Session
 }
 
 var (
-	token       string
-	guildId     string
-	adminRoleId string
-
 	commands = []*discordgo.ApplicationCommand{
 		// All commands and options must have a description
 		// Commands/options without description will fail the registration
@@ -34,60 +31,43 @@ var (
 
 			Description: "admin only - archive a channel",
 		},
-		{
-			Name: "help",
-
-			Description: "list commands a user can use",
-		},
 	}
 
-	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"about": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			if !requireAdmin(s, i) {
+	commandHandlers = map[string]func(b *DiscordBot, i *discordgo.InteractionCreate){
+		"about": func(b *DiscordBot, i *discordgo.InteractionCreate) {
+			if !requireAdmin(b, i) {
 				return
 			}
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "This command has not been finished",
 				},
 			})
 		},
-		"archive-channel": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		"archive-channel": func(b *DiscordBot, i *discordgo.InteractionCreate) {
+			b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "This command has not been finished",
 				},
 			})
-		},
-		"help": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			// s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			// 	Type: discordgo.InteractionResponseChannelMessageWithSource,
-			// 	Data: &discordgo.InteractionResponseData{
-			// 		if isAdmin(s, i.user) {
-			// 			Content: "This command has not been finished",
-			// 		} else {
-			// 			Content:
-			// 		}
-			// 	},
-			// })
 		},
 	}
 )
 
-func isAdmin(m *discordgo.Member) bool {
+func isAdmin(b *DiscordBot, m *discordgo.Member) bool {
 	for _, role := range m.Roles {
-		if role == adminRoleId {
+		if role == b.AdminRoleId {
 			return true
 		}
 	}
 	return false
 }
 
-func requireAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
-	if !isAdmin(i.Member) {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+func requireAdmin(b *DiscordBot, i *discordgo.InteractionCreate) bool {
+	if !isAdmin(b, i.Member) {
+		b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "This command requires admin",
@@ -99,15 +79,29 @@ func requireAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 	return true
 }
 
-func discordBot() {
-	token = getenv("DISCORD_BOT_TOKEN")
-	guildId = getenv("DISCORD_GUILD_ID")
-	adminRoleId = getenv("DISCORD_ADMIN_ROLE_ID")
-
-	s, err := discordgo.New("Bot " + token)
-	if err != nil {
-		log.Panicln("Failed to connect", err)
+func (b *DiscordBot) Connect() {
+	if b.Token == "" {
+		log.Fatalln("Missing token")
 	}
+	if b.AdminRoleId == "" {
+		log.Fatalln("Missing admin role id")
+	}
+	if b.GuildId == "" {
+		log.Fatalln("Missing guild id")
+	}
+	if b.ClientId == "" {
+		log.Fatalln("Missing client id")
+	}
+	if b.ClientSecret == "" {
+		log.Fatalln("Missing client secret")
+	}
+
+	s, err := discordgo.New("Bot " + b.Token)
+	if err != nil {
+		log.Fatalln("Failed to connect", err)
+	}
+
+	b.Session = s
 
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("Logged in as", r.User.String())
@@ -115,18 +109,18 @@ func discordBot() {
 
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
-			h(s, i)
+			h(b, i)
 		}
 	})
 
 	err = s.Open()
 	if err != nil {
-		log.Panicln("Failed to open session", err)
+		log.Fatalln("Failed to open session", err)
 	}
 
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
 	for i, v := range commands {
-		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildId, v)
+		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, b.GuildId, v)
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 		}
