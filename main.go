@@ -216,6 +216,10 @@ func main() {
 	})
 
 	for _, entry := range dirs {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
+			continue
+		}
+
 		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
 		if err != nil {
 			log.Fatalln("Failed to read", entry.Name(), err)
