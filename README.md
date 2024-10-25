@@ -14,6 +14,14 @@ This will start a local server at http://localhost:3000
 
 You will also want to install `gopls` for the language server in your IDE.
 
+## Linting
+
+This project is configured to use [golangci-lint](https://github.com/golangci/golangci-lint) for linting. To run it locally, use:
+
+```
+docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.61.0 golangci-lint run -v
+```
+
 ## Development with SAML
 
 The certificate for our current credentials will expire `May 4 20:08:05 2031 GMT`, at which point it will need to be renewed.
