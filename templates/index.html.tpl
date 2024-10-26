@@ -6,12 +6,16 @@
 <div class="grid lg:grid-cols-2 gap-6">
   <div class="card">
     <div class="card-title">Contact</div>
-    <div class="card-content">
-      <a href="/signin/discord" class="secondary-button">Link Discord</a>
-      <a href="https://discord.osucyber.club" class="secondary-button"
-        >Join the Discord</a
-      >
-      <a class="secondary-button">Subscribe to our mailing list</a>
+    <div class="card-content flex flex-col gap-2">
+      <a href="/discord/signin" class="secondary-button flex flex-row gap-2">
+        {{ if .hasLinkedDiscord }}
+        {{ template "checkmark.html.tpl" }}
+        {{ end }}
+        Link Discord
+      </a>
+      <a class="secondary-button flex flex-row gap-2">
+        Subscribe to our mailing list
+      </a>
     </div>
   </div>
   <div class="card">
