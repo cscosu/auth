@@ -224,7 +224,7 @@ func getCanAttend(db *sql.DB, userId string) (bool, error) {
 		return false, err
 	}
 
-	return time.Since(lastAttendanceTime) > 5*time.Second, nil
+	return time.Since(lastAttendanceTime) > 24*time.Hour, nil
 }
 
 type AttendanceType int
