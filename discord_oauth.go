@@ -62,7 +62,7 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		log.Println("Discord callback: Failed to start transaction", err, "User id =", userId)
-		http.Error(w, "ailed to get user", http.StatusForbidden)
+		http.Error(w, "Failed to get user", http.StatusForbidden)
 		return
 	}
 	row := tx.QueryRow("SELECT discord_id FROM users WHERE idm_id = ?", userId)
