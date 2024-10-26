@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -23,6 +24,8 @@ type Router struct {
 	db           *sql.DB
 	authProvider AuthProvider
 	jwtSecret    []byte
+	rootURL      *url.URL
+	bot          *DiscordBot
 }
 
 const AUTH_COOKIE_NAME string = "csc-auth"
@@ -116,16 +119,18 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	userId, hasUserId := getUserIDFromContext(req.Context())
 
 	if hasUserId {
-		row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+		row := r.db.QueryRow("SELECT name_num, discord_id FROM users WHERE idm_id = ?", userId)
 		var nameNum string
-		err := row.Scan(&nameNum)
+		var discordId sql.NullString
+		err := row.Scan(&nameNum, &discordId)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
 			return
 		}
 		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
-			"nameNum": nameNum,
+			"nameNum":          nameNum,
+			"hasLinkedDiscord": discordId.Valid,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
@@ -197,6 +202,11 @@ func (r *Router) EnforceJwtMiddleware(handler http.Handler) http.Handler {
 var migrations embed.FS
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalln("Failed to load .env", err)
+	}
+
 	mux := http.NewServeMux()
 
 	db, err := sql.Open("sqlite", "./auth.db")
@@ -231,15 +241,34 @@ func main() {
 		}
 	}
 
+	bot := &DiscordBot{
+		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
+		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
+		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
+		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
+		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
+		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
+		Db:            db,
+	}
+	bot.Connect()
+
 	authEnvironment := os.Getenv("ENV")
 	var authProvider AuthProvider
+	var rootURL *url.URL
 
 	if authEnvironment == "" {
+		rootURL, _ = url.Parse("http://localhost:3000")
 		authProvider = mockAuthProvider()
 	} else {
-		rootURL, _ := url.Parse("https://auth.osucyber.club")
+		rootURL, err = url.Parse("https://auth.osucyber.club")
+		if err != nil {
+			panic(err)
+		}
 		if authEnvironment == "saml" {
-			rootURL, _ = url.Parse("https://auth-test.osucyber.club")
+			rootURL, err = url.Parse("https://auth-test.osucyber.club")
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		keyPair, err := tls.LoadX509KeyPair("keys/sp-cert.pem", "keys/sp-key.pem")
@@ -247,7 +276,10 @@ func main() {
 			panic(err)
 		}
 
-		authProvider, _ = samlAuthProvider(mux, rootURL, &keyPair)
+		authProvider, err = samlAuthProvider(mux, rootURL, &keyPair)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
@@ -264,12 +296,16 @@ func main() {
 		db:           db,
 		authProvider: authProvider,
 		jwtSecret:    []byte(jwtSecret),
+		bot:          bot,
+		rootURL:      rootURL,
 	}
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/signin", authProvider.requireAuth(http.HandlerFunc(router.signin)))
 	mux.Handle("/signout", http.HandlerFunc(router.signout))
+	mux.Handle("/discord/signin", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.DiscordSignin))))
+	mux.Handle("/discord/callback", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.DiscordCallback))))
 
 	if authEnvironment == "saml" {
 		log.Println("Starting server on :443. Visit https://auth-test.osucyber.club and accept the self-signed certificate")
