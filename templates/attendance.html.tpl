@@ -1,11 +1,14 @@
 {{ template "base.html.tpl" . }}
 
-{{ define "title" }}OSU Cyber Security Club{{ end }}
+{{ define "title" }}Cyber Security Club @ Ohio State | Attendance{{ end }}
 
 {{ define "content" }}
 <div class="card">
   <div class="card-title">Attendance History</div>
   <div class="card-content">
+    {{ if not .records }}
+    <p>You have not attended any meetings yet.</p>
+    {{ else }}
     <table class="table-auto">
       <thead>
         <tr class="border-b-2">
@@ -26,6 +29,7 @@
         }}
       </tbody>
     </table>
+    {{ end }}
   </div>
 </div>
 {{ end }}

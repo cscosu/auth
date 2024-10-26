@@ -76,9 +76,19 @@ func (r *Router) signin(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	// Upsert the user, updating their information if it already exists. Do not
+	// update last_attended_timestamp, otherwise it will be set to NULL
 	_, err = r.db.Exec(`
-		INSERT OR REPLACE INTO users (idm_id, buck_id, name_num, display_name, student, alum, employee, faculty)
+		INSERT INTO users (idm_id, buck_id, name_num, display_name, student, alum, employee, faculty)
 		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+		ON CONFLICT (idm_id) DO UPDATE SET
+			buck_id = buck_id,
+			name_num = name_num,
+			display_name = display_name,
+			student = student,
+			alum = alum,
+			employee = employee,
+			faculty = faculty
 	`, attributes.IDMUID, attributes.BuckID, nameNum, attributes.DisplayName, student, alum, employee, faculty)
 	if err != nil {
 		log.Println("Failed to upsert user:", err)
@@ -293,7 +303,6 @@ func (r *Router) attend(w http.ResponseWriter, req *http.Request) {
 
 	err = Templates.ExecuteTemplate(w, "attend-status.html.tpl", map[string]interface{}{
 		"canAttend": false,
-		"oob":       true,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)

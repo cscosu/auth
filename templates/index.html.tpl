@@ -1,6 +1,6 @@
 {{ template "base.html.tpl" . }}
 
-{{ define "title" }}OSU Cyber Security Club{{ end }}
+{{ define "title" }}Cyber Security Club @ Ohio State{{ end }}
 
 {{ define "content" }}
 <div class="grid lg:grid-cols-2 gap-6">
@@ -41,14 +41,19 @@
       <ul class="list-disc list-inside">
         <li>
           Check out our
-          <a class="external-link" href="https://wiki.osucyber.club">Wiki</a>!
-          We have a lot of content from past meetings available.
+          <a
+            class="external-link"
+            href="https://wiki.osucyber.club"
+            target="_blank"
+            >Wiki</a
+          >! We have a lot of content from past meetings available.
         </li>
         <li>
           Play in our
           <a
             class="external-link"
             href="https://wiki.osucyber.club/Bootcamp-CTF/Welcome"
+            target="_blank"
             >24/7 Bootcamp CTF</a
           >! This is our series of hacking challenges you can try, right now!
         </li>

@@ -1,6 +1,6 @@
 {{ template "base.html.tpl" . }}
 
-{{ define "title" }}OSU Cyber Security Club{{ end }}
+{{ define "title" }}Cyber Security Club @ Ohio State{{ end }}
 
 {{ define "content" }}
 <div class="card">
