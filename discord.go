@@ -70,7 +70,7 @@ var (
 				})
 				return
 			}
-			content := fmt.Sprintf("**[%s (%s)](<https://www.osu.edu/search/?query=%s>)**\nLast login: <t:%d:f>\n",
+			content := fmt.Sprintf("**[%s (%s)](<https://www.osu.edu/search/?query=%s>)**\nLast seen: <t:%d:f>\n",
 				displayName,
 				nameNum,
 				url.QueryEscape(nameNum),
