@@ -26,6 +26,7 @@ type Router struct {
 	jwtSecret    []byte
 	rootURL      *url.URL
 	bot          *DiscordBot
+	mailchimp    *MailchimpClient
 }
 
 const AUTH_COOKIE_NAME string = "csc-auth"
@@ -292,12 +293,30 @@ func main() {
 		jwtSecret = "secret"
 	}
 
+	var mailchimp *MailchimpClient
+	mailchimpKey := os.Getenv("MAILCHIMP_API_KEY")
+	mailchimpServer := os.Getenv("MAILCHIMP_SERVER")
+	// Find in Audience > Settings > Audience name and campaign defaults
+	mailchimpListId := os.Getenv("MAILCHIMP_LIST_ID")
+	if mailchimpKey == "" || mailchimpServer == "" || mailchimpListId == "" {
+		log.Println("Warning: mailchimp key is not configured")
+	} else {
+		mailchimp = &MailchimpClient{
+			ApiKey: mailchimpKey,
+			Server: mailchimpServer,
+			ListId: mailchimpListId,
+		}
+	}
+
+	mailchimp
+
 	router := &Router{
 		db:           db,
 		authProvider: authProvider,
 		jwtSecret:    []byte(jwtSecret),
 		bot:          bot,
 		rootURL:      rootURL,
+		mailchimp:    mailchimp,
 	}
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
