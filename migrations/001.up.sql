@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
     buck_id INTEGER,
     name_num TEXT NOT NULL,
     display_name TEXT NOT NULL,
-    last_signin INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    last_seen_timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    last_attended_timestamp INTEGER,
     
     -- 0 or 1 depending on if the user has the affiliation
     student INTEGER NOT NULL,
@@ -25,7 +26,9 @@ CREATE INDEX IF NOT EXISTS users_student ON users (student);
 
 CREATE TABLE IF NOT EXISTS attendance_records (
     user_id INTEGER NOT NULL,
-    timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    timestamp INTEGER NOT NULL,
+    -- 0 for in person, 1 for online
+    kind INTEGER NOT NULL,
     PRIMARY KEY (user_id, timestamp),
     FOREIGN KEY (user_id) REFERENCES users(idm_id)
 ) WITHOUT ROWID;

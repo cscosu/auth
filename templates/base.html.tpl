@@ -20,7 +20,7 @@
             >
               <img src="https://osucyber.club/img/logo.png" width="28" />
             </a>
-            <div>OSU Cyber Security Club Auth</div>
+            <a hx-boost="true" href="/">OSU Cyber Security Club Auth</a>
           </div>
           {{ if .nameNum }}
           <div>
