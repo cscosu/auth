@@ -116,7 +116,10 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	userId, hasUserId := getUserIDFromContext(req.Context())
 
 	if hasUserId {
-		row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+		row := r.db.QueryRow(`
+			UPDATE users SET last_seen_timestamp = strftime('%s', 'now') WHERE idm_id = ?1
+			RETURNING name_num
+		`, userId)
 		var nameNum string
 		err := row.Scan(&nameNum)
 		if err != nil {
@@ -124,8 +127,17 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
 			return
 		}
+
+		canAttend, err := getCanAttend(r.db, userId)
+		if err != nil {
+			log.Println("Failed to get last attendance:", err)
+			http.Error(w, "Failed to get last attendance", http.StatusInternalServerError)
+			return
+		}
+
 		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
-			"nameNum": nameNum,
+			"nameNum":   nameNum,
+			"canAttend": canAttend,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
@@ -139,6 +151,149 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Failed to render template", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func (r *Router) attendance(w http.ResponseWriter, req *http.Request) {
+	userId, _ := getUserIDFromContext(req.Context())
+
+	row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+	var nameNum string
+	err := row.Scan(&nameNum)
+	if err != nil {
+		log.Println("Failed to get user:", err, userId)
+		http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
+		return
+	}
+
+	rows, err := r.db.Query("SELECT timestamp, kind FROM attendance_records WHERE user_id = ? ORDER BY timestamp DESC", userId)
+	if err != nil {
+		log.Println("Failed to get attendance records:", err)
+		http.Error(w, "Failed to get attendance records", http.StatusInternalServerError)
+		return
+	}
+
+	var attendanceRecords []map[string]interface{}
+	for rows.Next() {
+		var timestamp int64
+		var kind int
+		err = rows.Scan(&timestamp, &kind)
+		if err != nil {
+			log.Println("Failed to scan attendance record:", err)
+			http.Error(w, "Failed to scan attendance record", http.StatusInternalServerError)
+			return
+		}
+		attendanceType := "In Person"
+		if kind == int(AttendanceTypeOnline) {
+			attendanceType = "Online"
+		}
+
+		ny, _ := time.LoadLocation("America/New_York")
+
+		attendanceRecords = append(attendanceRecords, map[string]interface{}{
+			"timestamp": time.Unix(timestamp, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04"),
+			"type":      attendanceType,
+		})
+	}
+
+	err = Templates.ExecuteTemplate(w, "attendance.html.tpl", map[string]interface{}{
+		"nameNum": nameNum,
+		"records": attendanceRecords,
+	})
+	if err != nil {
+		log.Println("Failed to render template:", err)
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
+func getLastAttendanceTime(db *sql.DB, userId string) (time.Time, error) {
+	row := db.QueryRow("SELECT COALESCE(last_attended_timestamp, 0) FROM users WHERE idm_id = ?", userId)
+	var lastAttendanceTimestamp int64
+	err := row.Scan(&lastAttendanceTimestamp)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Unix(lastAttendanceTimestamp, 0), nil
+}
+
+func getCanAttend(db *sql.DB, userId string) (bool, error) {
+	lastAttendanceTime, err := getLastAttendanceTime(db, userId)
+	if err != nil {
+		return false, err
+	}
+
+	return time.Since(lastAttendanceTime) > 5*time.Second, nil
+}
+
+type AttendanceType int
+
+const (
+	AttendanceTypeInPerson AttendanceType = iota
+	AttendanceTypeOnline
+)
+
+func (r *Router) attend(w http.ResponseWriter, req *http.Request) {
+	userId, _ := getUserIDFromContext(req.Context())
+
+	attendanceType := AttendanceTypeInPerson
+	if req.URL.Path == "/attend/online" {
+		attendanceType = AttendanceTypeOnline
+	}
+
+	canAttend, err := getCanAttend(r.db, userId)
+	if err != nil {
+		log.Println("Failed to get last attendance:", err)
+		http.Error(w, "Failed to get last attendance", http.StatusInternalServerError)
+		return
+	}
+	if !canAttend {
+		log.Println("User attempted to attend too soon")
+		http.Error(w, "You cannot attend again so soon", http.StatusForbidden)
+		return
+	}
+
+	now := time.Now()
+	tx, err := r.db.Begin()
+	if err != nil {
+		log.Println("Attend: Failed to start transaction", err, "User id =", userId)
+		http.Error(w, "Failed to get user", http.StatusForbidden)
+		return
+	}
+
+	_, err = tx.Exec("UPDATE users SET last_attended_timestamp = ?1 WHERE idm_id = ?2", now.Unix(), userId)
+	if err != nil {
+		log.Println("Attend: Failed to set last attended timestamp:", err)
+		http.Error(w, "Failed to set last attended timestamp", http.StatusInternalServerError)
+		_ = tx.Rollback()
+		return
+	}
+
+	_, err = tx.Exec("INSERT INTO attendance_records (user_id, timestamp, kind) VALUES (?1, ?2, ?3)", userId, now.Unix(), attendanceType)
+	if err != nil {
+		log.Println("Attend: Failed to insert attendance record:", err)
+		http.Error(w, "Failed to insert attendance record", http.StatusInternalServerError)
+		_ = tx.Rollback()
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("Attend: failed to commit transaction:", err)
+		http.Error(w, "Failed to attend", http.StatusInternalServerError)
+		_ = tx.Rollback()
+		return
+	}
+
+	err = Templates.ExecuteTemplate(w, "attend-status.html.tpl", map[string]interface{}{
+		"canAttend": false,
+		"oob":       true,
+	})
+	if err != nil {
+		log.Println("Failed to render template:", err)
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -200,13 +355,38 @@ func main() {
 	mux := http.NewServeMux()
 
 	db, err := sql.Open("sqlite", "./auth.db")
-
 	if err != nil {
 		log.Fatalln("Failed to load the database:", err)
 	}
 
-	dirs, err := migrations.ReadDir("migrations")
+	db.SetMaxOpenConns(1)
 
+	_, err = db.Exec("PRAGMA busy_timeout = 5000;")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("PRAGMA synchronous = NORMAL;")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("PRAGMA cache_size = 2000;")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("PRAGMA temp_store = MEMORY;")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("PRAGMA foreign_keys = TRUE;")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("PRAGMA locking_mode=IMMEDIATE;")
+	if err != nil {
+		panic(err)
+	}
+
+	dirs, err := migrations.ReadDir("migrations")
 	if err != nil {
 		log.Fatalln("Failed to read migrations directory:", err)
 	}
@@ -224,7 +404,9 @@ func main() {
 		if err != nil {
 			log.Fatalln("Failed to read", entry.Name(), err)
 		}
+
 		sql := string(data)
+
 		_, err = db.Exec(sql)
 		if err != nil {
 			log.Fatalln("Failed to run", entry.Name(), err)
@@ -267,6 +449,9 @@ func main() {
 	}
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
+	mux.Handle("/attendance", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attendance))))
+	mux.Handle("/attend/in-person", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
+	mux.Handle("/attend/online", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/signin", authProvider.requireAuth(http.HandlerFunc(router.signin)))
 	mux.Handle("/signout", http.HandlerFunc(router.signout))
