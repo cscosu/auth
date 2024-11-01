@@ -11,6 +11,7 @@
   hx-swap="outerHTML"
   class="secondary-button flex flex-row gap-2"
 >
+  {{ template "email.html.tpl" }}
   Subscribe to our mailing list
 </button>
 {{ end }}

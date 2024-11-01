@@ -10,14 +10,16 @@
       <a href="/discord/signin" class="secondary-button flex flex-row gap-2">
         {{ if .hasLinkedDiscord }}
         {{ template "checkmark.html.tpl" }}
+        {{ else }}
+        {{ template "discord.html.tpl" }}
         {{ end }}
-        Link Discord
+        Join/Link Discord
       </a>
       {{ template "mailchimp.html.tpl" . }}
       {{ if .isOnMailingList }}
       <div>
         If you removed yourself from the mailing list and need to resubscribe,
-        you can do that
+        click
         <a
           class="external-link"
           href="https://mailinglist.osucyber.club"

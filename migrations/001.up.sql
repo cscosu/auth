@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     last_seen_timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     last_attended_timestamp INTEGER,
     
+    added_to_mailinglist INTEGER NOT NULL DEFAULT (FALSE),
+
     -- 0 or 1 depending on if the user has the affiliation
     student INTEGER NOT NULL,
     alum INTEGER NOT NULL,

@@ -132,11 +132,12 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	if hasUserId {
 		row := r.db.QueryRow(`
 			UPDATE users SET last_seen_timestamp = strftime('%s', 'now') WHERE idm_id = ?1
-			RETURNING name_num, discord_id
+			RETURNING name_num, discord_id, added_to_mailinglist
 		`, userId)
 		var nameNum string
 		var discordId sql.NullString
-		err := row.Scan(&nameNum, &discordId)
+		var isOnMailingList bool
+		err := row.Scan(&nameNum, &discordId, &isOnMailingList)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
@@ -150,19 +151,30 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		isOnMailingList, err := r.mailchimp.CheckIfMemberOnList(nameNum + "@osu.edu")
-		if err != nil {
-			log.Println("Failed to check if user is on mailing list:", err)
-			http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
-			return
-		}
-
 		if !isOnMailingList {
-			isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@buckeyemail.osu.edu")
+			isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@osu.edu")
 			if err != nil {
 				log.Println("Failed to check if user is on mailing list:", err)
 				http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
 				return
+			}
+
+			if !isOnMailingList {
+				isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@buckeyemail.osu.edu")
+				if err != nil {
+					log.Println("Failed to check if user is on mailing list:", err)
+					http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
+					return
+				}
+			}
+
+			if isOnMailingList {
+				_, err = r.db.Exec("UPDATE users SET added_to_mailinglist = 1 WHERE idm_id = ?", userId)
+				if err != nil {
+					log.Println("Failed to update user mailing list status:", err)
+					http.Error(w, "Failed to update user mailing list status", http.StatusInternalServerError)
+					return
+				}
 			}
 		}
 
