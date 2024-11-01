@@ -49,17 +49,17 @@ var (
 			user := options[0].UserValue(nil)
 			discordId := user.ID
 
-			row := b.Db.QueryRow(`SELECT name_num, display_name, last_signin, student, alum, employee, faculty FROM users WHERE discord_id = ?`, discordId)
+			row := b.Db.QueryRow(`SELECT name_num, display_name, last_seen_timestamp, student, alum, employee, faculty FROM users WHERE discord_id = ?`, discordId)
 			var (
 				nameNum     string
 				displayName string
-				lastLogin   int
+				lastSeen    int
 				student     bool
 				alum        bool
 				employee    bool
 				faculty     bool
 			)
-			err := row.Scan(&nameNum, &displayName, &lastLogin, &student, &alum, &employee, &faculty)
+			err := row.Scan(&nameNum, &displayName, &lastSeen, &student, &alum, &employee, &faculty)
 			if err != nil {
 				log.Println("/about command: discordId =", discordId, err)
 				_ = b.Session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -70,11 +70,11 @@ var (
 				})
 				return
 			}
-			content := fmt.Sprintf("**[%s (%s)](<https://www.osu.edu/search/?query=%s>)**\nLast login: <t:%d:f>\n",
+			content := fmt.Sprintf("**[%s (%s)](<https://www.osu.edu/search/?query=%s>)**\nLast seen: <t:%d:f>\n",
 				displayName,
 				nameNum,
 				url.QueryEscape(nameNum),
-				lastLogin,
+				lastSeen,
 			)
 
 			sep := ""

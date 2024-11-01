@@ -76,7 +76,7 @@ func (r *Router) DiscordCallback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err = r.db.Exec("UPDATE users SET discord_id = ? WHERE idm_id = ?", discordUser.ID, userId)
+	_, err = tx.Exec("UPDATE users SET discord_id = ? WHERE idm_id = ?", discordUser.ID, userId)
 	if err != nil {
 		log.Println("Discord callback: failed to update user:", err)
 		http.Error(w, "Failed to update discord", http.StatusInternalServerError)

@@ -1,6 +1,6 @@
 {{ template "base.html.tpl" . }}
 
-{{ define "title" }}OSU Cyber Security Club{{ end }}
+{{ define "title" }}Cyber Security Club @ Ohio State{{ end }}
 
 {{ define "content" }}
 <div class="grid lg:grid-cols-2 gap-6">
@@ -21,16 +21,18 @@
   <div class="card">
     <div class="card-title">Meetings</div>
     <div class="card-content">
-      <p>We meet Tuesdays at 7pm in Enarson 230.</p>
-      <p>Meeting reminders are sent as part of a weekly newsletter.</p>
-      <h2 class="mt-4 mb-2 text-xl font-bold">At a meeting right now?</h2>
-      <div class="flex gap-2">
-        <a class="grow justify-center secondary-button">I'm here in person</a>
-        <a class="grow justify-center secondary-button">I'm here online</a>
-      </div>
-      <a href="/attendance" class="external-link text-sm italic text-gray-600"
+      <p class="mb-2">
+        We meet Tuesdays at 7pm in Enarson 230. Meeting reminders are sent as
+        part of a weekly newsletter.
+      </p>
+
+      <a
+        hx-boost="true"
+        href="/attendance"
+        class="external-link text-sm italic text-gray-600"
         >View past attendance</a
       >
+      {{ template "attend-status.html.tpl" . }}
     </div>
   </div>
   <div class="card">
@@ -39,14 +41,19 @@
       <ul class="list-disc list-inside">
         <li>
           Check out our
-          <a class="external-link" href="https://wiki.osucyber.club">Wiki</a>!
-          We have a lot of content from past meetings available.
+          <a
+            class="external-link"
+            href="https://wiki.osucyber.club"
+            target="_blank"
+            >Wiki</a
+          >! We have a lot of content from past meetings available.
         </li>
         <li>
           Play in our
           <a
             class="external-link"
             href="https://wiki.osucyber.club/Bootcamp-CTF/Welcome"
+            target="_blank"
             >24/7 Bootcamp CTF</a
           >! This is our series of hacking challenges you can try, right now!
         </li>
