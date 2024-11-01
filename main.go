@@ -150,10 +150,27 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		isOnMailingList, err := r.mailchimp.CheckIfMemberOnList(nameNum + "@osu.edu")
+		if err != nil {
+			log.Println("Failed to check if user is on mailing list:", err)
+			http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
+			return
+		}
+
+		if !isOnMailingList {
+			isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@buckeyemail.osu.edu")
+			if err != nil {
+				log.Println("Failed to check if user is on mailing list:", err)
+				http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
+				return
+			}
+		}
+
 		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
 			"nameNum":          nameNum,
 			"canAttend":        canAttend,
 			"hasLinkedDiscord": discordId.Valid,
+			"isOnMailingList":  isOnMailingList,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
@@ -487,6 +504,10 @@ func main() {
 	var mailchimp *MailchimpClient
 	mailchimpKey := os.Getenv("MAILCHIMP_API_KEY")
 	mailchimpServer := os.Getenv("MAILCHIMP_SERVER")
+	if mailchimpServer == "" {
+		mailchimpServer = "us16"
+	}
+
 	// Find in Audience > Settings > Audience name and campaign defaults
 	mailchimpListId := os.Getenv("MAILCHIMP_LIST_ID")
 	if mailchimpKey == "" || mailchimpServer == "" || mailchimpListId == "" {
@@ -499,8 +520,6 @@ func main() {
 		}
 	}
 
-	mailchimp
-
 	router := &Router{
 		db:           db,
 		authProvider: authProvider,
@@ -511,6 +530,7 @@ func main() {
 	}
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
+	mux.Handle("POST /mailchimp", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.SetMailchimp))))
 	mux.Handle("/attendance", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attendance))))
 	mux.Handle("/attend/in-person", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
 	mux.Handle("/attend/online", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))

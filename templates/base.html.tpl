@@ -38,7 +38,9 @@
     </div>
     <footer class="flex justify-center">
       <div class="container py-6 mx-2">
-        Cyber Security Club @ The Ohio State University
+        <a href="https://osucyber.club"
+          >Cyber Security Club @ The Ohio State University</a
+        >
       </div>
     </footer>
   </body>
