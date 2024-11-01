@@ -26,6 +26,7 @@ type Router struct {
 	jwtSecret    []byte
 	rootURL      *url.URL
 	bot          *DiscordBot
+	mailchimp    *MailchimpClient
 }
 
 const AUTH_COOKIE_NAME string = "csc-auth"
@@ -131,11 +132,12 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	if hasUserId {
 		row := r.db.QueryRow(`
 			UPDATE users SET last_seen_timestamp = strftime('%s', 'now') WHERE idm_id = ?1
-			RETURNING name_num, discord_id
+			RETURNING name_num, discord_id, added_to_mailinglist
 		`, userId)
 		var nameNum string
 		var discordId sql.NullString
-		err := row.Scan(&nameNum, &discordId)
+		var isOnMailingList bool
+		err := row.Scan(&nameNum, &discordId, &isOnMailingList)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
@@ -149,10 +151,38 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		if !isOnMailingList {
+			isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@osu.edu")
+			if err != nil {
+				log.Println("Failed to check if user is on mailing list:", err)
+				http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
+				return
+			}
+
+			if !isOnMailingList {
+				isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@buckeyemail.osu.edu")
+				if err != nil {
+					log.Println("Failed to check if user is on mailing list:", err)
+					http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
+					return
+				}
+			}
+
+			if isOnMailingList {
+				_, err = r.db.Exec("UPDATE users SET added_to_mailinglist = 1 WHERE idm_id = ?", userId)
+				if err != nil {
+					log.Println("Failed to update user mailing list status:", err)
+					http.Error(w, "Failed to update user mailing list status", http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
 		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
 			"nameNum":          nameNum,
 			"canAttend":        canAttend,
 			"hasLinkedDiscord": discordId.Valid,
+			"isOnMailingList":  isOnMailingList,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
@@ -483,15 +513,36 @@ func main() {
 		jwtSecret = "secret"
 	}
 
+	var mailchimp *MailchimpClient
+	mailchimpKey := os.Getenv("MAILCHIMP_API_KEY")
+	mailchimpServer := os.Getenv("MAILCHIMP_SERVER")
+	if mailchimpServer == "" {
+		mailchimpServer = "us16"
+	}
+
+	// Find in Audience > Settings > Audience name and campaign defaults
+	mailchimpListId := os.Getenv("MAILCHIMP_LIST_ID")
+	if mailchimpKey == "" || mailchimpServer == "" || mailchimpListId == "" {
+		log.Println("Warning: mailchimp key is not configured")
+	} else {
+		mailchimp = &MailchimpClient{
+			ApiKey: mailchimpKey,
+			Server: mailchimpServer,
+			ListId: mailchimpListId,
+		}
+	}
+
 	router := &Router{
 		db:           db,
 		authProvider: authProvider,
 		jwtSecret:    []byte(jwtSecret),
 		bot:          bot,
 		rootURL:      rootURL,
+		mailchimp:    mailchimp,
 	}
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
+	mux.Handle("POST /mailchimp", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.SetMailchimp))))
 	mux.Handle("/attendance", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attendance))))
 	mux.Handle("/attend/in-person", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
 	mux.Handle("/attend/online", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))

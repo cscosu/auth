@@ -10,12 +10,30 @@
       <a href="/discord/signin" class="secondary-button flex flex-row gap-2">
         {{ if .hasLinkedDiscord }}
         {{ template "checkmark.html.tpl" }}
+        {{ else }}
+        {{ template "discord.html.tpl" }}
         {{ end }}
-        Link Discord
+        Join/Link Discord
       </a>
-      <a class="secondary-button flex flex-row gap-2">
-        Subscribe to our mailing list
-      </a>
+      {{ template "mailchimp.html.tpl" . }}
+      {{ if .isOnMailingList }}
+      <div>
+        If you removed yourself from the mailing list and need to resubscribe,
+        click
+        <a
+          class="external-link"
+          href="https://mailinglist.osucyber.club"
+          target="_blank"
+          >here</a
+        >.
+      </div>
+      {{ end }}
+      <div>
+        Issues? Ask in the Discord or email
+        <a class="external-link" href="mailto:info@osucyber.club"
+          >info@osucyber.club</a
+        >.
+      </div>
     </div>
   </div>
   <div class="card">
