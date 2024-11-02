@@ -543,6 +543,9 @@ func main() {
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
 	mux.Handle("POST /mailchimp", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.SetMailchimp))))
+	mux.Handle("/admin", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.admin))))
+	mux.Handle("/admin/users", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.adminUsers))))
+	mux.Handle("/admin/vote", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.adminVote))))
 	mux.Handle("/attendance", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attendance))))
 	mux.Handle("/attend/in-person", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
 	mux.Handle("/attend/online", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.attend))))
