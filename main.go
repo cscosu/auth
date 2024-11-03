@@ -218,6 +218,8 @@ func (r *Router) attendance(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	ny, _ := time.LoadLocation("America/New_York")
+
 	var attendanceRecords []map[string]interface{}
 	for rows.Next() {
 		var timestamp int64
@@ -232,8 +234,6 @@ func (r *Router) attendance(w http.ResponseWriter, req *http.Request) {
 		if kind == int(AttendanceTypeOnline) {
 			attendanceType = "Online"
 		}
-
-		ny, _ := time.LoadLocation("America/New_York")
 
 		attendanceRecords = append(attendanceRecords, map[string]interface{}{
 			"timestamp": time.Unix(timestamp, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04"),

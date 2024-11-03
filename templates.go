@@ -3,11 +3,11 @@ package main
 import (
 	"embed"
 	"fmt"
-	"html/template"
 	"io/fs"
 	"net/http"
 	"regexp"
 	"strings"
+	"text/template"
 )
 
 //go:embed templates/*
@@ -26,7 +26,7 @@ type templatePatterns struct {
 
 func newTemplatePatterns() *templatePatterns {
 	return &templatePatterns{
-		extends: regexp.MustCompile(`{{\s*template\s*"([^"]+)"\s*\.?\s*}}`),
+		extends: regexp.MustCompile(`{{\s*template\s*"([^"]+)".*}}`),
 	}
 }
 
