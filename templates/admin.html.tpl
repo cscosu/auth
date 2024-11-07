@@ -13,6 +13,6 @@
       >Vote</a
     >
   </div>
-  <div class="flex-1">{{ block "admin" . }}{{ end }}</div>
+  <div class="flex-1 min-w-0">{{ block "admin" . }}{{ end }}</div>
 </div>
 {{ end }}

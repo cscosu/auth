@@ -53,151 +53,155 @@
       >
       {{ end }}
       {{ end }}
-      <table class="table-auto">
-        <thead>
-          <tr class="border-b-2">
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
+      <div class="w-full overflow-x-scroll">
+        <table class="table-auto">
+          <thead>
+            <tr class="border-b-2">
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <a
+                    target="_blank"
+                    href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=mail"
+                    >Name.#</a
+                  >
+                  {{ template "table-header.html.tpl" .orders.name_num }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Discord ID</span>
+                  {{ template "table-header.html.tpl" .orders.discord_id }}
+                </div>
+              </th>
+              <th class="px-4 py-2 text-left">
                 <a
                   target="_blank"
-                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=mail"
-                  >Name.#</a
+                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=employeenumber"
+                  >Buck ID</a
                 >
-                {{ template "table-header.html.tpl" .orders.name_num }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Discord ID</span>
-                {{ template "table-header.html.tpl" .orders.discord_id }}
-              </div>
-            </th>
-            <th class="px-4 py-2 text-left">
-              <a
-                target="_blank"
-                href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=employeenumber"
-                >Buck ID</a
-              >
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <a
+                    target="_blank"
+                    href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=preferred-names"
+                    >Name</a
+                  >
+                  {{ template "table-header.html.tpl" .orders.display_name }}
+                </div>
+              </th>
+              <th class="px-4 py-2 text-left">
                 <a
+                  class="inline-flex"
                   target="_blank"
-                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=preferred-names"
-                  >Name</a
+                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=idm-id"
+                  >IDM ID {{ template "key.html.tpl" }}</a
                 >
-                {{ template "table-header.html.tpl" .orders.display_name }}
-              </div>
-            </th>
-            <th class="px-4 py-2 text-left">
-              <a
-                class="inline-flex"
-                target="_blank"
-                href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=idm-id"
-                >IDM ID {{ template "key.html.tpl" }}</a
-              >
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Last Seen</span>
-                {{ template "table-header.html.tpl" .orders.last_seen_timestamp }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Last Attended</span>
-                {{ template "table-header.html.tpl" .orders.last_attended_timestamp }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>On Mailinglist</span>
-                {{ template "table-header.html.tpl" .orders.added_to_mailinglist }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Student</span>
-                {{ template "table-header.html.tpl" .orders.student }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Alum</span>
-                {{ template "table-header.html.tpl" .orders.alum }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Employee</span>
-                {{ template "table-header.html.tpl" .orders.employee }}
-              </div>
-            </th>
-            <th class="px-4 py-2">
-              <div class="inline-flex justify-between gap-6 group">
-                <span>Faculty</span>
-                {{ template "table-header.html.tpl" .orders.faculty }}
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="[&_td]:px-4 [&_td]:py-2 [&_tr:not(:last-child)]:border-b">
-          {{
-            range.users
-          }}
-          <tr>
-            <td>{{ .NameNum }}</td>
-            <td>{{ if not (eq .DiscordID 0) }}{{ .DiscordID }}{{ end }}</td>
-            <td>{{ .BuckID }}</td>
-            <td>{{ .DisplayName }}</td>
-            <td>{{ .IDMID }}</td>
-            <td>{{ .LastSeenTime }}</td>
-            <td>
-              {{ if .LastAttendedTime }}
-              {{ .LastAttendedTime }}
-              {{ end }}
-            </td>
-            <td>
-              {{ if .AddedToMailingList }}
-              {{ template "checkmark.html.tpl" }}
-              {{ else }}
-              {{ template "x.html.tpl" }}
-              {{ end }}
-            </td>
-            <td>
-              {{ if .Student }}
-              {{ template "checkmark.html.tpl" }}
-              {{ else }}
-              {{ template "x.html.tpl" }}
-              {{ end }}
-            </td>
-            <td>
-              {{ if .Alum }}
-              {{ template "checkmark.html.tpl" }}
-              {{ else }}
-              {{ template "x.html.tpl" }}
-              {{ end }}
-            </td>
-            <td>
-              {{ if .Employee }}
-              {{ template "checkmark.html.tpl" }}
-              {{ else }}
-              {{ template "x.html.tpl" }}
-              {{ end }}
-            </td>
-            <td>
-              {{ if .Faculty }}
-              {{ template "checkmark.html.tpl" }}
-              {{ else }}
-              {{ template "x.html.tpl" }}
-              {{ end }}
-            </td>
-          </tr>
-          {{
-            end
-          }}
-        </tbody>
-      </table>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Last Seen</span>
+                  {{ template "table-header.html.tpl" .orders.last_seen_timestamp }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Last Attended</span>
+                  {{ template "table-header.html.tpl" .orders.last_attended_timestamp }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>On Mailinglist</span>
+                  {{ template "table-header.html.tpl" .orders.added_to_mailinglist }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Student</span>
+                  {{ template "table-header.html.tpl" .orders.student }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Alum</span>
+                  {{ template "table-header.html.tpl" .orders.alum }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Employee</span>
+                  {{ template "table-header.html.tpl" .orders.employee }}
+                </div>
+              </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Faculty</span>
+                  {{ template "table-header.html.tpl" .orders.faculty }}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="[&_td]:px-4 [&_td]:py-2 [&_tr:not(:last-child)]:border-b"
+          >
+            {{
+              range.users
+            }}
+            <tr>
+              <td>{{ .NameNum }}</td>
+              <td>{{ if not (eq .DiscordID 0) }}{{ .DiscordID }}{{ end }}</td>
+              <td>{{ .BuckID }}</td>
+              <td>{{ .DisplayName }}</td>
+              <td>{{ .IDMID }}</td>
+              <td>{{ .LastSeenTime }}</td>
+              <td>
+                {{ if .LastAttendedTime }}
+                {{ .LastAttendedTime }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .AddedToMailingList }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .Student }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .Alum }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .Employee }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .Faculty }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+            </tr>
+            {{
+              end
+            }}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
