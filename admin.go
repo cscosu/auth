@@ -261,4 +261,3 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 }
-

@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	_ "modernc.org/sqlite"
 
+	_ "modernc.org/sqlite"
 )
 
 var candidates map[string]int
@@ -33,11 +33,15 @@ func (r *Router) processVote(w http.ResponseWriter, req *http.Request) {
 		// TODO - handle logic for actually processing vote
 
 		err = Templates.ExecuteTemplate(w, "voting-form.html.tpl", map[string]interface{}{
-			"nameNum": nameNum,
-			"hasVoted":	true,
+			"nameNum":  nameNum,
+			"hasVoted": true,
 		})
+		if err != nil {
+			log.Println("Failed to render template:", err)
+			http.Error(w, "Failed to render template", http.StatusInternalServerError)
+			return
+		}
 	}
-	
 
 }
 
@@ -64,13 +68,17 @@ func (r *Router) vote(w http.ResponseWriter, req *http.Request) {
 		candidateList = append(candidateList, "C")
 
 		err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]interface{}{
-			"nameNum": nameNum,
-			"hasVoted":	false,								// TODO - get a real value
-			"isMember": true,									// TODO - get a real value
-			"candidateTitle": "President",		// TODO - get a real value
-			"candidateList": candidateList,		// TODO - get a real value
-			
+			"nameNum":        nameNum,
+			"hasVoted":       false,         // TODO - get a real value
+			"isMember":       true,          // TODO - get a real value
+			"candidateTitle": "President",   // TODO - get a real value
+			"candidateList":  candidateList, // TODO - get a real value
 		})
+		if err != nil {
+			log.Println("Failed to render template:", err)
+			http.Error(w, "Failed to render template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -92,10 +100,10 @@ func (r *Router) adminVote(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = Templates.ExecuteTemplate(w, "admin-vote.html.tpl", map[string]interface{}{
-		"nameNum": nameNum,
-		"path":    req.URL.Path,
+		"nameNum":        nameNum,
+		"path":           req.URL.Path,
 		"candidateTitle": candidateTitle,
-		"candidateList": candidateList,
+		"candidateList":  candidateList,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)
