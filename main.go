@@ -449,7 +449,7 @@ func main() {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
 			continue
 		}
-		if !(authEnvironment == "") && strings.Contains(entry.Name(), "-seed") {
+		if !(authEnvironment == "" || authEnvironment == "saml") && strings.Contains(entry.Name(), "-seed") {
 			continue
 		}
 
