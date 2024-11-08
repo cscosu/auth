@@ -261,26 +261,3 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 }
-
-func (r *Router) adminVote(w http.ResponseWriter, req *http.Request) {
-	userId, _ := getUserIDFromContext(req.Context())
-
-	row := r.db.QueryRow("SELECT name_num FROM users WHERE buck_id = ?", userId)
-	var nameNum string
-	err := row.Scan(&nameNum)
-	if err != nil {
-		log.Println("Failed to get user:", err, userId)
-		http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
-		return
-	}
-
-	err = Templates.ExecuteTemplate(w, "admin-vote.html.tpl", map[string]interface{}{
-		"nameNum": nameNum,
-		"path":    req.URL.Path,
-	})
-	if err != nil {
-		log.Println("Failed to render template:", err)
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		return
-	}
-}
