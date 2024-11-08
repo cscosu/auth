@@ -443,8 +443,13 @@ func main() {
 		return strings.Compare(a.Name(), b.Name())
 	})
 
+	authEnvironment := os.Getenv("ENV")
+
 	for _, entry := range dirs {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
+			continue
+		}
+		if !(authEnvironment == "") && strings.Contains(entry.Name(), "-seed") {
 			continue
 		}
 
@@ -472,7 +477,7 @@ func main() {
 	}
 	bot.Connect()
 
-	authEnvironment := os.Getenv("ENV")
+	// authEnvironment := os.Getenv("ENV")
 	var authProvider AuthProvider
 	var rootURL *url.URL
 
