@@ -18,7 +18,7 @@ func (r *Router) EnforceAdminMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		userId, _ := getUserIDFromContext(req.Context())
 
-		row := r.db.QueryRow("SELECT is_admin FROM users WHERE idm_id = ?", userId)
+		row := r.db.QueryRow("SELECT is_admin FROM users WHERE buck_id = ?", userId)
 		var isAdmin bool
 		err := row.Scan(&isAdmin)
 		if err != nil {
@@ -42,9 +42,8 @@ func (r *Router) admin(w http.ResponseWriter, req *http.Request) {
 }
 
 type AdminUserList struct {
-	IDMID              string
 	DiscordID          int64
-	BuckID             int64
+	BuckID             string
 	DisplayName        string
 	NameNum            string
 	LastSeenTime       string
@@ -68,7 +67,7 @@ type AdminOrderState struct {
 func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 	userId, _ := getUserIDFromContext(req.Context())
 
-	row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+	row := r.db.QueryRow("SELECT name_num FROM users WHERE buck_id = ?", userId)
 	var nameNum string
 	err := row.Scan(&nameNum)
 	if err != nil {
@@ -104,7 +103,6 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 			OR discord_id LIKE '%' || ?1 || '%' ESCAPE '\'
 			OR buck_id LIKE '%' || ?1 || '%' ESCAPE '\'
 			OR display_name LIKE '%' || ?1 || '%' ESCAPE '\'
-			OR idm_id LIKE '%' || ?1 || '%' ESCAPE '\'
 		ORDER BY
 	`
 
@@ -201,7 +199,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 
 	users := []AdminUserList{}
 	rows, err := r.db.Query(`
-		SELECT idm_id, discord_id, buck_id, name_num, display_name, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
+		SELECT buck_id, discord_id, name_num, display_name, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
 		`+sqlQueryBody+`
 		LIMIT 50
 		OFFSET ?2
@@ -216,11 +214,11 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 	ny, _ := time.LoadLocation("America/New_York")
 
 	for rows.Next() {
-		var idmID, nameNum, displayName string
+		var buckID, nameNum, displayName string
 		var discordID, lastAttendedTimestamp sql.NullInt64
-		var buckID, lastSeenTimestamp int64
+		var lastSeenTimestamp int64
 		var addedToMailingList, student, alum, employee, faculty bool
-		err := rows.Scan(&idmID, &discordID, &buckID, &nameNum, &displayName, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
+		err := rows.Scan(&buckID, &discordID, &nameNum, &displayName, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
 		if err != nil {
 			log.Println("Failed to scan user:", err)
 			http.Error(w, "Failed to get users", http.StatusInternalServerError)
@@ -233,7 +231,6 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		}
 
 		users = append(users, AdminUserList{
-			IDMID:              idmID,
 			DiscordID:          discordID.Int64,
 			BuckID:             buckID,
 			DisplayName:        displayName,
@@ -268,7 +265,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 func (r *Router) adminVote(w http.ResponseWriter, req *http.Request) {
 	userId, _ := getUserIDFromContext(req.Context())
 
-	row := r.db.QueryRow("SELECT name_num FROM users WHERE idm_id = ?", userId)
+	row := r.db.QueryRow("SELECT name_num FROM users WHERE buck_id = ?", userId)
 	var nameNum string
 	err := row.Scan(&nameNum)
 	if err != nil {

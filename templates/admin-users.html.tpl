@@ -57,6 +57,14 @@
         <table class="table-auto">
           <thead>
             <tr class="border-b-2">
+              <th class="px-4 py-2 text-left">
+                <a
+                  class="inline-flex"
+                  target="_blank"
+                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=employeenumber"
+                  >Buck ID {{ template "key.html.tpl" }}</a
+                >
+              </th>
               <th class="px-4 py-2">
                 <div class="inline-flex justify-between gap-6 group">
                   <a
@@ -73,13 +81,6 @@
                   {{ template "table-header.html.tpl" .orders.discord_id }}
                 </div>
               </th>
-              <th class="px-4 py-2 text-left">
-                <a
-                  target="_blank"
-                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=employeenumber"
-                  >Buck ID</a
-                >
-              </th>
               <th class="px-4 py-2">
                 <div class="inline-flex justify-between gap-6 group">
                   <a
@@ -89,14 +90,6 @@
                   >
                   {{ template "table-header.html.tpl" .orders.display_name }}
                 </div>
-              </th>
-              <th class="px-4 py-2 text-left">
-                <a
-                  class="inline-flex"
-                  target="_blank"
-                  href="https://webauth.service.ohio-state.edu/~shibboleth/user-attribute-reference.html?article=idm-id"
-                  >IDM ID {{ template "key.html.tpl" }}</a
-                >
               </th>
               <th class="px-4 py-2">
                 <div class="inline-flex justify-between gap-6 group">
@@ -149,11 +142,10 @@
               range.users
             }}
             <tr>
+              <td>{{ .BuckID }}</td>
               <td>{{ .NameNum }}</td>
               <td>{{ if not (eq .DiscordID 0) }}{{ .DiscordID }}{{ end }}</td>
-              <td>{{ .BuckID }}</td>
               <td>{{ .DisplayName }}</td>
-              <td>{{ .IDMID }}</td>
               <td>{{ .LastSeenTime }}</td>
               <td>
                 {{ if .LastAttendedTime }}
