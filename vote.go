@@ -7,6 +7,13 @@ import (
 
 )
 
+var candidates map[string]int
+var candidateTitle string
+
+func init() {
+	candidates = make(map[string]int)
+}
+
 func (r *Router) processVote(w http.ResponseWriter, req *http.Request) {
 	userId, hasUserId := getUserIDFromContext(req.Context())
 
@@ -79,9 +86,16 @@ func (r *Router) adminVote(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var candidateList []string
+	for candidate := range candidates {
+		candidateList = append(candidateList, candidate)
+	}
+
 	err = Templates.ExecuteTemplate(w, "admin-vote.html.tpl", map[string]interface{}{
 		"nameNum": nameNum,
 		"path":    req.URL.Path,
+		"candidateTitle": candidateTitle,
+		"candidateList": candidateList,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)
