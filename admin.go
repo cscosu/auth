@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func ceilDiv(a, b int) int {
+	return (a + b - 1) / b
+}
+
 func (r *Router) EnforceAdminMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		userId, _ := getUserIDFromContext(req.Context())
@@ -189,7 +193,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Failed to get users", http.StatusInternalServerError)
 		return
 	}
-	totalPages := totalUsers / 50
+	totalPages := ceilDiv(totalUsers, 50)
 	pageNumbers := make([]int, totalPages)
 	for i := range pageNumbers {
 		pageNumbers[i] = i + 1
