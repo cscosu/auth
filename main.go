@@ -443,13 +443,8 @@ func main() {
 		return strings.Compare(a.Name(), b.Name())
 	})
 
-	authEnvironment := os.Getenv("ENV")
-
 	for _, entry := range dirs {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
-			continue
-		}
-		if !(authEnvironment == "" || authEnvironment == "saml") && strings.Contains(entry.Name(), "-seed") {
 			continue
 		}
 
@@ -466,6 +461,25 @@ func main() {
 		}
 	}
 
+	authEnvironment := os.Getenv("ENV")
+
+	// seed the database in dev mode
+	if authEnvironment == "" || authEnvironment == "saml" {
+		fileName := "migrations/seed.sql"
+
+		data, err := migrations.ReadFile(fileName)
+		if err != nil {
+			log.Fatalln("Failed to read", fileName, err)
+		}
+
+		sql := string(data)
+
+		_, err = db.Exec(sql)
+		if err != nil {
+			log.Fatalln("Failed to run", fileName, err)
+		}
+	}
+
 	bot := &DiscordBot{
 		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
 		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
@@ -477,7 +491,6 @@ func main() {
 	}
 	bot.Connect()
 
-	// authEnvironment := os.Getenv("ENV")
 	var authProvider AuthProvider
 	var rootURL *url.URL
 
