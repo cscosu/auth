@@ -10,7 +10,7 @@ import (
 	"text/template"
 )
 
-//go:embed templates/*
+//go:embed templates/*.html.tpl
 var templateAssets embed.FS
 
 type TemplateLoader struct {
