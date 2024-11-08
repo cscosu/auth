@@ -123,7 +123,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	for _, tableName := range tableNames {
 		query.Set("order", strings.TrimRight(tableName+","+orderQuery, ","))
-		req.URL.RawQuery = strings.Replace(query.Encode(), "%2C", ",", 1)
+		req.URL.RawQuery = strings.ReplaceAll(query.Encode(), "%2C", ",")
 		addUrl := req.URL.String()
 
 		removedOrderQuery := strings.Replace(orderQuery, "-"+tableName, "", 1)
@@ -135,7 +135,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		} else {
 			query.Del("order")
 		}
-		req.URL.RawQuery = strings.Replace(query.Encode(), "%2C", ",", 1)
+		req.URL.RawQuery = strings.ReplaceAll(query.Encode(), "%2C", ",")
 		deleteUrl := req.URL.String()
 
 		orders[tableName] = AdminOrderState{
@@ -168,7 +168,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 				} else {
 					query.Set("order", strings.Replace(orderQuery, tableName, "-"+tableName, 1))
 				}
-				req.URL.RawQuery = strings.Replace(query.Encode(), "%2C", ",", 1)
+				req.URL.RawQuery = strings.ReplaceAll(query.Encode(), "%2C", ",")
 				order.NextUrl = req.URL.String()
 
 				sqlOrders = append(sqlOrders, tableName+" "+sqlDirection)
