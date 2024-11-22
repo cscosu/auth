@@ -129,24 +129,30 @@ func (b *DiscordBot) requireAdmin(i *discordgo.InteractionCreate) bool {
 
 func (b *DiscordBot) Connect() {
 	if b.Token == "" {
-		log.Fatalln("Missing token")
+		log.Println("Failed to connect to discord: Missing token")
+		return
 	}
 	if b.AdminRoleId == "" {
-		log.Fatalln("Missing admin role id")
+		log.Println("Failed to connect to discord: Missing admin role id")
+		return
 	}
 	if b.GuildId == "" {
-		log.Fatalln("Missing guild id")
+		log.Println("Failed to connect to discord: Missing guild id")
+		return
 	}
 	if b.ClientId == "" {
-		log.Fatalln("Missing client id")
+		log.Println("Failed to connect to discord: Missing client id")
+		return
 	}
 	if b.ClientSecret == "" {
-		log.Fatalln("Missing client secret")
+		log.Println("Failed to connect to discord: Missing client secret")
+		return
 	}
 
 	s, err := discordgo.New("Bot " + b.Token)
 	if err != nil {
-		log.Fatalln("Failed to connect", err)
+		log.Println("Failed to connect to discord:", err)
+		return
 	}
 
 	b.Session = s
@@ -177,10 +183,16 @@ func (b *DiscordBot) Connect() {
 }
 
 func (b *DiscordBot) GiveStudentRole(discordId string) error {
+	if b.Session == nil {
+		return fmt.Errorf("discord bot not connected")
+	}
 	return b.Session.GuildMemberRoleAdd(b.GuildId, discordId, b.StudentRoleId)
 }
 
 func (b *DiscordBot) AddStudentToGuild(discordId string, accessToken string) error {
+	if b.Session == nil {
+		return fmt.Errorf("discord bot not connected")
+	}
 	return b.Session.GuildMemberAdd(b.GuildId, discordId, &discordgo.GuildMemberAddParams{
 		AccessToken: accessToken,
 		Roles:       []string{b.StudentRoleId},
@@ -188,5 +200,8 @@ func (b *DiscordBot) AddStudentToGuild(discordId string, accessToken string) err
 }
 
 func (b *DiscordBot) RemoveStudentRole(discordId string) error {
+	if b.Session == nil {
+		return fmt.Errorf("discord bot not connected")
+	}
 	return b.Session.GuildMemberRoleRemove(b.GuildId, discordId, b.StudentRoleId)
 }
