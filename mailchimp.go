@@ -24,6 +24,9 @@ type MailchimpMemberResponse struct {
 }
 
 func (m *MailchimpClient) CheckIfMemberOnList(email string) (bool, error) {
+	if m == nil {
+		return false, fmt.Errorf("mailchimp not configured")
+	}
 	subscriberHash := emailToSubscriberHash(email)
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists/%s/members/%s", m.Server, m.ListId, subscriberHash)
 
@@ -66,6 +69,9 @@ type AddMemberToListRequestData struct {
 }
 
 func (m *MailchimpClient) AddMemberToList(email string) error {
+	if m == nil {
+		return fmt.Errorf("mailchimp not configured")
+	}
 	data := AddMemberToListRequestData{
 		EmailAddress: email,
 		Status:       "subscribed",
