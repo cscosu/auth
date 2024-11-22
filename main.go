@@ -166,16 +166,12 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@osu.edu")
 			if err != nil {
 				log.Println("Failed to check if user is on mailing list:", err)
-				http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
-				return
 			}
 
 			if !isOnMailingList {
 				isOnMailingList, err = r.mailchimp.CheckIfMemberOnList(nameNum + "@buckeyemail.osu.edu")
 				if err != nil {
 					log.Println("Failed to check if user is on mailing list:", err)
-					http.Error(w, "Failed to check if user is on mailing list", http.StatusInternalServerError)
-					return
 				}
 			}
 
@@ -409,7 +405,7 @@ var migrations embed.FS
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalln("Failed to load .env", err)
+		log.Println("Failed to load .env", err)
 	}
 
 	mux := http.NewServeMux()
