@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     discord_id INTEGER,
     name_num TEXT NOT NULL,
     display_name TEXT NOT NULL,
+    is_admin INTEGER NOT NULL DEFAULT (FALSE),
     last_seen_timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     last_attended_timestamp INTEGER,
     

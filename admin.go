@@ -41,7 +41,7 @@ func (r *Router) admin(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/admin/users", http.StatusTemporaryRedirect)
 }
 
-type AdminUserList struct {
+type AdminUserListItem struct {
 	DiscordID          int64
 	BuckID             string
 	DisplayName        string
@@ -53,6 +53,7 @@ type AdminUserList struct {
 	Alum               bool
 	Employee           bool
 	Faculty            bool
+	IsAdmin            bool
 }
 
 type AdminOrderState struct {
@@ -118,6 +119,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		"alum",
 		"employee",
 		"faculty",
+		"is_admin",
 	}
 
 	query := req.URL.Query()
@@ -197,9 +199,9 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		pageNumbers[i] = i + 1
 	}
 
-	users := []AdminUserList{}
+	users := []AdminUserListItem{}
 	rows, err := r.db.Query(`
-		SELECT buck_id, discord_id, name_num, display_name, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
+		SELECT buck_id, discord_id, name_num, display_name, is_admin, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
 		`+sqlQueryBody+`
 		LIMIT 50
 		OFFSET ?2
@@ -217,8 +219,8 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		var buckID, nameNum, displayName string
 		var discordID, lastAttendedTimestamp sql.NullInt64
 		var lastSeenTimestamp int64
-		var addedToMailingList, student, alum, employee, faculty bool
-		err := rows.Scan(&buckID, &discordID, &nameNum, &displayName, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
+		var is_admin, addedToMailingList, student, alum, employee, faculty bool
+		err := rows.Scan(&buckID, &discordID, &nameNum, &displayName, &is_admin, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
 		if err != nil {
 			log.Println("Failed to scan user:", err)
 			http.Error(w, "Failed to get users", http.StatusInternalServerError)
@@ -230,7 +232,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 			lastAttendedTime = time.Unix(lastAttendedTimestamp.Int64, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04")
 		}
 
-		users = append(users, AdminUserList{
+		users = append(users, AdminUserListItem{
 			DiscordID:          discordID.Int64,
 			BuckID:             buckID,
 			DisplayName:        displayName,
@@ -242,6 +244,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 			Alum:               alum,
 			Employee:           employee,
 			Faculty:            faculty,
+			IsAdmin:            is_admin,
 		})
 	}
 

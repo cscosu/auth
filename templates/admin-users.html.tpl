@@ -133,6 +133,12 @@
                   {{ template "table-header.html.tpl" .orders.faculty }}
                 </div>
               </th>
+              <th class="px-4 py-2">
+                <div class="inline-flex justify-between gap-6 group">
+                  <span>Admin</span>
+                  {{ template "table-header.html.tpl" .orders.is_admin }}
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody
@@ -182,6 +188,13 @@
               </td>
               <td>
                 {{ if .Faculty }}
+                {{ template "checkmark.html.tpl" }}
+                {{ else }}
+                {{ template "x.html.tpl" }}
+                {{ end }}
+              </td>
+              <td>
+                {{ if .IsAdmin }}
                 {{ template "checkmark.html.tpl" }}
                 {{ else }}
                 {{ template "x.html.tpl" }}
