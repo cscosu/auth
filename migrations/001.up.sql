@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS users (
     faculty INTEGER NOT NULL
 ) STRICT, WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS users_discord_id ON users (discord_id);
-CREATE INDEX IF NOT EXISTS users_buck_id ON users (buck_id);
-CREATE INDEX IF NOT EXISTS users_student ON users (student);
+CREATE INDEX IF NOT EXISTS discord_id ON users (discord_id);
+CREATE INDEX IF NOT EXISTS buck_id ON users (buck_id);
+CREATE INDEX IF NOT EXISTS student ON users (student);
 
 CREATE TABLE IF NOT EXISTS attendance_records (
     user_id INTEGER NOT NULL,
@@ -30,6 +30,33 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     kind INTEGER NOT NULL,
     PRIMARY KEY (user_id, timestamp),
     FOREIGN KEY (user_id) REFERENCES users(buck_id)
+) STRICT, WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS elections (
+    election_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+
+    -- 0 means not yet started
+    -- 1 means started and in progress (should only be exactly one election at a time)
+    -- >1 means ended at that unix timestamp
+    timestamp INTEGER NOT NULL DEFAULT (0)
+) STRICT;
+
+CREATE INDEX IF NOT EXISTS timestamp ON elections (timestamp);
+
+CREATE TABLE IF NOT EXISTS candidates (
+    candidate_id INTEGER PRIMARY KEY,
+    election_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    votes INTEGER NOT NULL DEFAULT 0
+) STRICT;
+
+CREATE INDEX IF NOT EXISTS election_id ON candidates (election_id);
+
+CREATE TABLE IF NOT EXISTS votes (
+    election_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    PRIMARY KEY (election_id, user_id)
 ) STRICT, WITHOUT ROWID;
 
 COMMIT;

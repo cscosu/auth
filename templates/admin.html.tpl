@@ -5,11 +5,14 @@
   <div class="flex flex-col gap-2 w-40" hx-boost="true">
     <a
       href="/admin/users"
-      class="rounded-sm px-4 py-2
+      class="rounded-sm px-4 py-2 hover:bg-gray-100
         {{ if eq .path `/admin/users` }}bg-gray-100{{ end }}"
       >Users</a
     >
-    <a href="/admin/vote" class="hover:bg-gray-100 rounded-sm px-4 py-2"
+    <a
+      href="/admin/vote"
+      class="rounded-sm px-4 py-2 hover:bg-gray-100
+        {{ if eq .path `/admin/vote` }}bg-gray-100{{ end }}"
       >Vote</a
     >
   </div>

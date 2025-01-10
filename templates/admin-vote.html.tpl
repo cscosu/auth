@@ -1,36 +1,39 @@
-{{ template "base.html.tpl" . }}
+{{ template "admin.html.tpl" . }}
 
 {{ define "title" }}Admin Vote | Cyber Security Club @ Ohio State{{ end }}
 
-{{ define "content" }}
+{{ define "admin" }}
 <div class="card">
-  <div class="card-title">Vote Editor</div>
+  <div class="card-title">Admin Votes</div>
   <div class="card-content">
-		<div id="candidate-title">
-			<p class="font-bold">Candidate Title</p>
-			<input type="text" id="candidate-title-in" name="candidateTitle"> {{ .candidateTitle }} </div>
-
-		</div>
-		<div id="candidate-list">
-			{{
-				range.candidateList
-			}}
-
-			<li>
-				<input type="radio" id="{{ . }}" name="election"/>
-				<!-- TODO - this id is not good. Could have spaces or smth -->
-				<label for="{{ . }}"> {{ . }} </label>
-			</li>
-
-			{{
-				end
-			}}
-		</div>
-		<button
-      class="grow justify-center secondary-button"
+    <a hx-boost="true" href="/admin/vote/new" class="secondary-button"
+      >New Vote</a
     >
-      Submit
-    </button>
-	</div>
+
+    <div>
+      <h1>Past Votes</h1>
+      <ul class="list-disc list-inside">
+        {{
+          range.pastElections
+        }}
+        <li>
+          <a
+            class="font-bold"
+            hx-boost="true"
+            href="/admin/vote/{{ .ElectionId }}"
+            >{{ .Name }}</a
+          >
+          {{ if .Published }}<em>published</em>{{ end }}
+
+          {{ if .Done }}
+          <em>completed {{ .DoneTime }}</em>
+          {{ end }}
+        </li>
+        {{
+          end
+        }}
+      </ul>
+    </div>
+  </div>
 </div>
 {{ end }}
