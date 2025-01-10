@@ -293,6 +293,7 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 	defer rows.Close()
 
 	var candidates []Candidate
+	totalVotes := 0
 
 	for rows.Next() {
 		var candidate Candidate
@@ -303,6 +304,7 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		candidates = append(candidates, candidate)
+		totalVotes += candidate.Votes
 	}
 
 	if !published && req.Method == "PUT" {
@@ -347,6 +349,7 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 		"published":    published,
 		"done":         done,
 		"timestamp":    timestamp,
+		"totalVotes":   totalVotes,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)
@@ -512,6 +515,7 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 		"electionName": electionName,
 		"electionId":   electionId,
 		"candidates":   candidates,
+		"totalVotes":   0,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)

@@ -12,6 +12,7 @@
       end
     }}
   </ul>
+  <p>{{ .totalVotes }} total vote{{ if ne .totalVotes 1 }}s{{ end }}</p>
   {{ if not .done }}
   <a
     hx-boost="true"
