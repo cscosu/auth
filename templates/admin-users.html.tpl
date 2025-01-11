@@ -139,6 +139,7 @@
                   {{ template "table-header.html.tpl" .orders.is_admin }}
                 </div>
               </th>
+              <th class="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody
@@ -147,60 +148,7 @@
             {{
               range.users
             }}
-            <tr>
-              <td>{{ .BuckID }}</td>
-              <td>{{ .NameNum }}</td>
-              <td>{{ if not (eq .DiscordID 0) }}{{ .DiscordID }}{{ end }}</td>
-              <td>{{ .DisplayName }}</td>
-              <td>{{ .LastSeenTime }}</td>
-              <td>
-                {{ if .LastAttendedTime }}
-                {{ .LastAttendedTime }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .AddedToMailingList }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .Student }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .Alum }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .Employee }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .Faculty }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-              <td>
-                {{ if .IsAdmin }}
-                {{ template "checkmark.html.tpl" }}
-                {{ else }}
-                {{ template "x.html.tpl" }}
-                {{ end }}
-              </td>
-            </tr>
+            {{ template "admin-users-row.html.tpl" . }}
             {{
               end
             }}

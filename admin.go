@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"slices"
@@ -54,6 +55,8 @@ type AdminUserListItem struct {
 	Employee           bool
 	Faculty            bool
 	IsAdmin            bool
+
+	Editable bool
 }
 
 type AdminOrderState struct {
@@ -258,6 +261,97 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		"orderQuery":  orderQuery,
 		"searchQuery": searchQuery,
 	})
+	if err != nil {
+		log.Println("Failed to render template:", err)
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (r *Router) adminUserEdit(w http.ResponseWriter, req *http.Request) {
+	ny, _ := time.LoadLocation("America/New_York")
+
+	buckId, err := strconv.Atoi(req.PathValue("user_id"))
+	if err != nil {
+		log.Println("Failed to get buck id:", err)
+		http.Error(w, "Failed to get buck id", http.StatusBadRequest)
+		return
+	}
+
+	editable := false
+
+	var nameNum, displayName string
+	var discordID, lastAttendedTimestamp sql.NullInt64
+	var lastSeenTimestamp int64
+	var is_admin, addedToMailingList, student, alum, employee, faculty bool
+
+	if req.Method == "PATCH" {
+		newNameNum := req.FormValue("nameNum")
+		newDisplayName := req.FormValue("displayName")
+		newAddedToMailingList := req.FormValue("addedToMailingList") == "on"
+		newIsStudent := req.FormValue("isStudent") == "on"
+		newIsAlum := req.FormValue("isAlum") == "on"
+		newIsEmployee := req.FormValue("isEmployee") == "on"
+		newIsFaculty := req.FormValue("isFaculty") == "on"
+		newIsAdmin := req.FormValue("isAdmin") == "on"
+
+		formDiscordId := req.FormValue("discordId")
+		formDiscordIdValue, atoiErr := strconv.Atoi(formDiscordId)
+		if formDiscordId != "" && atoiErr != nil {
+			log.Println("Failed to convert discord id to int:", atoiErr)
+			http.Error(w, "Failed to convert discord id to int", http.StatusBadRequest)
+			return
+		}
+
+		var newDiscordId sql.NullInt64
+		newDiscordId.Valid = formDiscordId != ""
+		newDiscordId.Int64 = int64(formDiscordIdValue)
+
+		err = r.db.QueryRow(`
+			UPDATE users
+			SET name_num = ?, discord_id = ?, display_name = ?, added_to_mailinglist = ?, student = ?, alum = ?, employee = ?, faculty = ?, is_admin = ?
+			WHERE buck_id = ?
+			RETURNING discord_id, name_num, display_name, is_admin, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
+			`, newNameNum, newDiscordId, newDisplayName, newAddedToMailingList, newIsStudent, newIsAlum, newIsEmployee, newIsFaculty, newIsAdmin, buckId,
+		).Scan(&discordID, &nameNum, &displayName, &is_admin, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
+	} else if req.Method == "GET" {
+		err = r.db.QueryRow(`
+			SELECT discord_id, name_num, display_name, is_admin, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
+			FROM users WHERE buck_id = ?
+			`, buckId,
+		).Scan(&discordID, &nameNum, &displayName, &is_admin, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
+
+		editable = req.FormValue("cancel") == ""
+	}
+
+	if err != nil {
+		log.Println("Failed to scan user:", err)
+		http.Error(w, "Failed to get users", http.StatusInternalServerError)
+		return
+	}
+
+	var lastAttendedTime string
+	if lastAttendedTimestamp.Valid {
+		lastAttendedTime = time.Unix(lastAttendedTimestamp.Int64, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04")
+	}
+
+	user := AdminUserListItem{
+		DiscordID:          discordID.Int64,
+		BuckID:             fmt.Sprint(buckId),
+		DisplayName:        displayName,
+		NameNum:            nameNum,
+		LastSeenTime:       time.Unix(lastSeenTimestamp, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04"),
+		LastAttendedTime:   lastAttendedTime,
+		AddedToMailingList: addedToMailingList,
+		Student:            student,
+		Alum:               alum,
+		Employee:           employee,
+		Faculty:            faculty,
+		IsAdmin:            is_admin,
+		Editable:           editable,
+	}
+
+	err = Templates.ExecuteTemplate(w, "admin-users-row.html.tpl", user)
 	if err != nil {
 		log.Println("Failed to render template:", err)
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
