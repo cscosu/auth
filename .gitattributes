@@ -1,2 +1,3 @@
 *.sql linguist-detectable=true linguist-language=sql
 *.html.tpl linguist-language=HTML
+/migrations/seed.sql linguist-vendored=true -diff
