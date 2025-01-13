@@ -2,7 +2,9 @@ FROM golang:1.23.2-alpine
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-COPY auth_provider.go main.go saml_auth_provider.go tls_certs.go /app
+COPY templates templates
+COPY migrations migrations
+COPY *.go .
 RUN go build -o main .
 
 FROM alpine:latest
