@@ -157,6 +157,8 @@ func (b *DiscordBot) Connect() {
 
 	b.Session = s
 
+	s.Identify.Intents = discordgo.IntentGuildMembers
+
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("Logged in as", r.User.String())
 	})
@@ -164,6 +166,13 @@ func (b *DiscordBot) Connect() {
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(b, i)
+		}
+	})
+
+	s.AddHandler(func(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+		row := b.Db.QueryRow("SELECT buck_id FROM users WHERE discord_id = ?", m.User.ID)
+		if row != nil {
+			b.GiveStudentRole(m.User.ID)
 		}
 	})
 

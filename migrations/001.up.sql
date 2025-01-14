@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin INTEGER NOT NULL DEFAULT (FALSE),
     last_seen_timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     last_attended_timestamp INTEGER,
-    
+
     added_to_mailinglist INTEGER NOT NULL DEFAULT (FALSE),
 
     -- 0 or 1 depending on if the user has the affiliation
