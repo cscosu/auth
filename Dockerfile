@@ -13,5 +13,6 @@ COPY static/ /app/static/
 COPY --from=0 /app/main main
 COPY keys/sp-cert.pem keys/sp-cert.pem
 COPY keys/sp-key.pem keys/sp-key.pem
+COPY .env .env
 ENV ENV=prod
 CMD ["/app/main"]
