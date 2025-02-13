@@ -51,5 +51,4 @@ jobs:
             --cache-from $REGISTRY/$REPOSITORY:$IMAGE_TAG \
             -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --push $REGISTRY/$REPOSITORY:$IMAGE_TAG \
-            .
+            --push .
