@@ -409,7 +409,13 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	db, err := sql.Open("sqlite", "./auth.db")
+	db_url, ok := os.LookupEnv("DB_URL")
+	if ok != true {
+		db_url = "./auth.db"
+		log.Printf("Unable to find 'DB_URL' env var, falling back to './auth.db'")
+	}
+
+	db, err := sql.Open("sqlite", db_url)
 	if err != nil {
 		log.Fatalln("Failed to load the database:", err)
 	}
