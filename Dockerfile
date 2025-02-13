@@ -5,7 +5,7 @@ RUN go mod download
 COPY templates templates
 COPY migrations migrations
 COPY *.go .
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 FROM alpine:latest
 WORKDIR /app
