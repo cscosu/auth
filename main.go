@@ -410,7 +410,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	db_url, ok := os.LookupEnv("DB_URL")
-	if ok != true {
+	if !ok {
 		db_url = "./auth.db"
 		log.Printf("Unable to find 'DB_URL' env var, falling back to './auth.db'")
 	}
