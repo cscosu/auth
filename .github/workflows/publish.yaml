@@ -16,7 +16,7 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::749980637880:role/infra2-ci
+          role-to-assume: arn:aws:iam::749980637880:role/core-ci
           aws-region: us-east-2
 
       - name: Login to Amazon ECR
@@ -43,7 +43,7 @@ jobs:
       - name: Build, tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: infra2-ecr
+          REPOSITORY: core
         run: |
           export IMAGE_TAG=auth2
           docker buildx build \
