@@ -8,6 +8,8 @@ COPY *.go .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 FROM alpine:latest
+COPY --from=0 /usr/local/go/lib/time/zoneinfo.zip /
+ENV ZONEINFO=/zoneinfo.zip
 WORKDIR /app
 COPY static/ /app/static/
 COPY --from=0 /app/main main
