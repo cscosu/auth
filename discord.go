@@ -66,6 +66,7 @@ var (
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "User has not linked their OSU account",
+						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
 				return
@@ -98,6 +99,7 @@ var (
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: content,
+					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
 		},
@@ -119,6 +121,7 @@ func (b *DiscordBot) requireAdmin(i *discordgo.InteractionCreate) bool {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "This command requires admin",
+				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		})
 		return false
