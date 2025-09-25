@@ -142,12 +142,13 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 	if hasUserId {
 		row := r.db.QueryRow(`
 			UPDATE users SET last_seen_timestamp = strftime('%s', 'now') WHERE buck_id = ?1
-			RETURNING name_num, discord_id, added_to_mailinglist
+			RETURNING name_num, discord_id, added_to_mailinglist, is_admin
 		`, userId)
 		var nameNum string
 		var discordId sql.NullString
 		var isOnMailingList bool
-		err := row.Scan(&nameNum, &discordId, &isOnMailingList)
+    var isAdmin bool
+		err := row.Scan(&nameNum, &discordId, &isOnMailingList, &isAdmin)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
 			http.Redirect(w, req, "/signout", http.StatusTemporaryRedirect)
@@ -189,6 +190,7 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			"canAttend":        canAttend,
 			"hasLinkedDiscord": discordId.Valid,
 			"isOnMailingList":  isOnMailingList,
+      "isAdmin":          isAdmin,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
