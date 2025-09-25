@@ -151,7 +151,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 
 	sqlOrders := make([]string, 0)
 	orderNum := 1
-	for _, tableName := range strings.Split(orderQuery, ",") {
+	for tableName := range strings.SplitSeq(orderQuery, ",") {
 		if len(tableName) > 1 {
 			negative := tableName[0] == '-'
 			tableName = strings.TrimPrefix(tableName, "-")
@@ -251,7 +251,7 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 		})
 	}
 
-	err = Templates.ExecuteTemplate(w, "admin-users.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "admin-users.html.tpl", map[string]any{
 		"nameNum":     nameNum,
 		"path":        req.URL.Path,
 		"users":       users,
@@ -285,7 +285,8 @@ func (r *Router) adminUserEdit(w http.ResponseWriter, req *http.Request) {
 	var lastSeenTimestamp int64
 	var is_admin, addedToMailingList, student, alum, employee, faculty bool
 
-	if req.Method == "PATCH" {
+	switch req.Method {
+	case "PATCH":
 		newNameNum := req.FormValue("nameNum")
 		newDisplayName := req.FormValue("displayName")
 		newAddedToMailingList := req.FormValue("addedToMailingList") == "on"
@@ -314,7 +315,7 @@ func (r *Router) adminUserEdit(w http.ResponseWriter, req *http.Request) {
 			RETURNING discord_id, name_num, display_name, is_admin, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
 			`, newNameNum, newDiscordId, newDisplayName, newAddedToMailingList, newIsStudent, newIsAlum, newIsEmployee, newIsFaculty, newIsAdmin, buckId,
 		).Scan(&discordID, &nameNum, &displayName, &is_admin, &lastSeenTimestamp, &lastAttendedTimestamp, &addedToMailingList, &student, &alum, &employee, &faculty)
-	} else if req.Method == "GET" {
+	case "GET":
 		err = r.db.QueryRow(`
 			SELECT discord_id, name_num, display_name, is_admin, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty
 			FROM users WHERE buck_id = ?

@@ -19,7 +19,7 @@ You will also want to install `gopls` for the language server in your IDE.
 This project is configured to use [golangci-lint](https://github.com/golangci/golangci-lint) for linting. To run it locally, use:
 
 ```
-docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.61.0 golangci-lint run -v
+docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint:latest golangci-lint run -v
 ```
 
 ## Development with SAML

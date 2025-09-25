@@ -1,4 +1,4 @@
-FROM golang:1.23.2-alpine
+FROM golang:latest
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download

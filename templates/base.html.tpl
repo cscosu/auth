@@ -6,7 +6,18 @@
     <meta name="title" content="{{ block `title` . }}{{ end }}" />
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="/static/tailwind.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+      @tailwind base;
+      @tailwind components;
+      @tailwind utilities;
+      .card { @apply shadow-md rounded-sm border; }
+      .card-title { @apply shadow-sm py-2 px-3 font-bold; }
+      .card-content { @apply py-2 px-3; }
+      .external-link { @apply text-blue-500; }
+      .secondary-button { @apply inline-flex border border-gray-300 hover:border-gray-400 active:border-gray-500 text-gray-800 rounded-md cursor-pointer px-4 py-2 text-center; }
+      .primary-button { @apply inline-flex bg-teal-400 hover:bg-teal-500 active:bg-teal-600 font-bold text-gray-100 rounded-md cursor-pointer px-4 py-2 text-center; }
+    </style>
     <title>{{ block "title" . }}{{ end }}</title>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -19,7 +30,7 @@
               href="/"
               class="mr-6 flex items-center space-x-2"
             >
-              <img src="https://osucyber.club/img/logo.png" width="28" />
+              <img src="/static/logo.png" width="28" />
             </a>
             <a hx-boost="true" href="/">OSU Cyber Security Club Auth</a>
           </div>

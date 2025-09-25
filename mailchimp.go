@@ -144,7 +144,7 @@ func (r *Router) SetMailchimp(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = Templates.ExecuteTemplate(w, "mailchimp.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "mailchimp.html.tpl", map[string]any{
 		"isOnMailingList": true,
 	})
 	if err != nil {
