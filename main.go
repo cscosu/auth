@@ -498,6 +498,7 @@ func main() {
 		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
 		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
 		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
+		AlumniRoleId:  os.Getenv("DISCORD_ALUMNI_ROLE_ID"),
 		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
 		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
 		Db:            db,
@@ -570,6 +571,11 @@ func main() {
 		rootURL:      rootURL,
 		mailchimp:    mailchimp,
 	}
+
+	go func() {
+		alumnusCheckNextUser(bot)
+		time.Sleep(1 * time.Hour)
+	}()
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
 	mux.Handle("POST /mailchimp", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.SetMailchimp))))
