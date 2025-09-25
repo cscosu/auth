@@ -54,7 +54,7 @@ func (r *Router) processVote(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		err = Templates.ExecuteTemplate(w, "voting-form.html.tpl", map[string]interface{}{
+		err = Templates.ExecuteTemplate(w, "voting-form.html.tpl", map[string]any{
 			"nameNum":  nameNum,
 			"hasVoted": true,
 		})
@@ -88,7 +88,7 @@ func (r *Router) vote(w http.ResponseWriter, req *http.Request) {
 			SELECT election_id, name FROM elections WHERE timestamp = 1 LIMIT 1
 		`).Scan(&electionId, &electionName)
 		if err == sql.ErrNoRows {
-			err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]interface{}{
+			err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]any{
 				"nameNum": nameNum,
 			})
 			if err != nil {
@@ -113,7 +113,7 @@ func (r *Router) vote(w http.ResponseWriter, req *http.Request) {
 		}
 
 		if hasVoted {
-			err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]interface{}{
+			err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]any{
 				"nameNum":      nameNum,
 				"hasVoted":     true,
 				"electionName": electionName,
@@ -152,7 +152,7 @@ func (r *Router) vote(w http.ResponseWriter, req *http.Request) {
 			candidates = append(candidates, candidate)
 		}
 
-		err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]interface{}{
+		err = Templates.ExecuteTemplate(w, "vote.html.tpl", map[string]any{
 			"nameNum":      nameNum,
 			"isMember":     true,
 			"electionName": electionName,
@@ -212,7 +212,7 @@ func (r *Router) adminVote(w http.ResponseWriter, req *http.Request) {
 		elections = append(elections, election)
 	}
 
-	err = Templates.ExecuteTemplate(w, "admin-vote.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "admin-vote.html.tpl", map[string]any{
 		"nameNum":       nameNum,
 		"path":          req.URL.Path,
 		"pastElections": elections,
@@ -317,7 +317,7 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 		}
 		candidates = append(candidates, candidate)
 
-		err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]interface{}{
+		err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]any{
 			"electionName": electionName,
 			"electionId":   electionId,
 			"candidates":   candidates,
@@ -340,7 +340,7 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = Templates.ExecuteTemplate(w, "admin-vote-edit.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "admin-vote-edit.html.tpl", map[string]any{
 		"nameNum":      nameNum,
 		"path":         "/admin/vote",
 		"electionName": electionName,
@@ -391,7 +391,8 @@ func (r *Router) adminVoteCandidateEdit(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if req.Method == "PATCH" {
+	switch req.Method {
+	case "PATCH":
 		candidateName := req.FormValue("candidateName")
 		_, err = r.db.Exec("UPDATE candidates SET name = ? WHERE candidate_id = ?", candidateName, candidateId)
 		if err != nil {
@@ -399,7 +400,7 @@ func (r *Router) adminVoteCandidateEdit(w http.ResponseWriter, req *http.Request
 			http.Error(w, "Failed to update candidate", http.StatusInternalServerError)
 			return
 		}
-	} else if req.Method == "DELETE" {
+	case "DELETE":
 		_, err = r.db.Exec("DELETE FROM candidates WHERE candidate_id = ?", candidateId)
 		if err != nil {
 			log.Println("Failed to delete candidate:", err)
@@ -441,7 +442,7 @@ func (r *Router) adminVoteCandidateEdit(w http.ResponseWriter, req *http.Request
 			candidates = append(candidates, candidate)
 		}
 
-		err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]interface{}{
+		err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]any{
 			"electionName": electionName,
 			"electionId":   electionId,
 			"candidates":   candidates,
@@ -510,7 +511,7 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 		candidates = append(candidates, candidate)
 	}
 
-	err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]any{
 		"published":    true,
 		"electionName": electionName,
 		"electionId":   electionId,

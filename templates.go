@@ -162,7 +162,7 @@ func (tl *TemplateLoader) parseTemplates() error {
 	return nil
 }
 
-func (tl *TemplateLoader) ExecuteTemplate(w http.ResponseWriter, templateName string, data interface{}) error {
+func (tl *TemplateLoader) ExecuteTemplate(w http.ResponseWriter, templateName string, data any) error {
 	tmpl, ok := tl.cache[templateName]
 	if !ok {
 		return fmt.Errorf("template \"%s\" not found", templateName)

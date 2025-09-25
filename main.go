@@ -66,13 +66,14 @@ func (r *Router) signin(w http.ResponseWriter, req *http.Request) {
 	faculty := false
 
 	for _, affiliation := range attributes.Affiliations {
-		if affiliation == "student@osu.edu" {
+		switch affiliation {
+		case "student@osu.edu":
 			student = true
-		} else if affiliation == "alum@osu.edu" {
+		case "alum@osu.edu":
 			alum = true
-		} else if affiliation == "employee@osu.edu" {
+		case "employee@osu.edu":
 			employee = true
-		} else if affiliation == "faculty@osu.edu" {
+		case "faculty@osu.edu":
 			faculty = true
 		}
 	}
@@ -185,7 +186,7 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]interface{}{
+		err = Templates.ExecuteTemplate(w, "index.html.tpl", map[string]any{
 			"nameNum":          nameNum,
 			"canAttend":        canAttend,
 			"hasLinkedDiscord": discordId.Valid,
@@ -228,7 +229,7 @@ func (r *Router) attendance(w http.ResponseWriter, req *http.Request) {
 
 	ny, _ := time.LoadLocation("America/New_York")
 
-	var attendanceRecords []map[string]interface{}
+	var attendanceRecords []map[string]any
 	for rows.Next() {
 		var timestamp int64
 		var kind int
@@ -243,13 +244,13 @@ func (r *Router) attendance(w http.ResponseWriter, req *http.Request) {
 			attendanceType = "Online"
 		}
 
-		attendanceRecords = append(attendanceRecords, map[string]interface{}{
+		attendanceRecords = append(attendanceRecords, map[string]any{
 			"timestamp": time.Unix(timestamp, 0).In(ny).Format("Mon Jan _2, 2006 at 15:04"),
 			"type":      attendanceType,
 		})
 	}
 
-	err = Templates.ExecuteTemplate(w, "attendance.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "attendance.html.tpl", map[string]any{
 		"nameNum": nameNum,
 		"records": attendanceRecords,
 	})
@@ -339,7 +340,7 @@ func (r *Router) attend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = Templates.ExecuteTemplate(w, "attend-status.html.tpl", map[string]interface{}{
+	err = Templates.ExecuteTemplate(w, "attend-status.html.tpl", map[string]any{
 		"canAttend": false,
 	})
 	if err != nil {
@@ -361,7 +362,7 @@ func (r *Router) InjectJwtMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
-		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}

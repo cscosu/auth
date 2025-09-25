@@ -1,9 +1,4 @@
 all: build
 
-tailwind:
-	@mkdir -p tmp
-
-prepare: tailwind
-
-build: tailwind
+build:
 	@go build -o tmp/main .

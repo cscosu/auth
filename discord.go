@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"slices"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -107,12 +108,7 @@ var (
 )
 
 func (b *DiscordBot) isAdmin(m *discordgo.Member) bool {
-	for _, role := range m.Roles {
-		if role == b.AdminRoleId {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(m.Roles, b.AdminRoleId)
 }
 
 func (b *DiscordBot) requireAdmin(i *discordgo.InteractionCreate) bool {
