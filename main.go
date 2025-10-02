@@ -191,7 +191,7 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 			"canAttend":        canAttend,
 			"hasLinkedDiscord": discordId.Valid,
 			"isOnMailingList":  isOnMailingList,
-      "isAdmin":          isAdmin,
+			"isAdmin":          isAdmin,
 		})
 		if err != nil {
 			log.Println("Failed to render template:", err)
