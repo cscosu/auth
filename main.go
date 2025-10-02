@@ -553,6 +553,8 @@ func main() {
 		mailchimpServer = "us16"
 	}
 
+	log.Println("hi")
+
 	// Find in Audience > Settings > Audience name and campaign defaults
 	mailchimpListId := os.Getenv("MAILCHIMP_LIST_ID")
 	if mailchimpKey == "" || mailchimpServer == "" || mailchimpListId == "" {
