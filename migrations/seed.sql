@@ -1,3 +1,9 @@
+BEGIN;
+INSERT OR REPLACE INTO users 
+(buck_id, discord_id, display_name, name_num, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty, is_admin)
+VALUES
+(500123456, NULL, 'Brutus Buckeye', 'buckeye.1', NULL, NULL, 1,1,0,0,0,1);
+
 INSERT OR REPLACE INTO users
 (buck_id, discord_id, display_name, name_num, last_seen_timestamp, last_attended_timestamp, added_to_mailinglist, student, alum, employee, faculty)
 VALUES
@@ -1001,3 +1007,4 @@ VALUES
 (525119038,NULL,'Rickie Cheetam','cheetam.4576',1684794159,1652435455,0,1,0,1,0),
 (506436165,6536698969953349102,'Brook Andreu','andreu.3878',1638836524,1651666692,0,1,1,1,0),
 (533335732,NULL,'Gale Biggins','biggins.3347',1655272710,1663024697,1,1,0,0,1);
+COMMIT;

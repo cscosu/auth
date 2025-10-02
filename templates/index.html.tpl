@@ -78,5 +78,20 @@
       </ul>
     </div>
   </div>
+  {{ if .isAdmin }}
+  <div class="card">
+    <div class="card-title">Admin Dashboard</div>
+    <div class="card-content">
+      <p class="mb-2">
+        You are an admin. Click 
+        <a
+          class="external-link"
+          href="/admin"
+          >here</a
+        > to go to the admin page.
+      </p>
+    </div>
+  </div>
+  {{ end }}
 </div>
 {{ end }}
