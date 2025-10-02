@@ -148,7 +148,7 @@ func (r *Router) index(w http.ResponseWriter, req *http.Request) {
 		var nameNum string
 		var discordId sql.NullString
 		var isOnMailingList bool
-    var isAdmin bool
+		var isAdmin bool
 		err := row.Scan(&nameNum, &discordId, &isOnMailingList, &isAdmin)
 		if err != nil {
 			log.Println("Failed to get user:", err, userId)
