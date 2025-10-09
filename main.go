@@ -537,7 +537,8 @@ func main() {
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
+	if jwtSecret == "" {os.Getenv("ENV")
+
 		if authEnvironment != "" && authEnvironment != "saml" {
 			log.Fatalln("JWT_SECRET not set")
 		}

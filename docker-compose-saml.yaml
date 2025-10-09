@@ -1,15 +1,13 @@
 services:
   auth:
     ports:
-      - 443:443
+      - 3000:3000
     build:
       dockerfile: Dockerfile.dev
     command: air
     volumes:
       - ./keys:/app/keys
       - ./tlskeys:/app/tlskeys
-    environment:
-      - ENV=saml
     develop:
       watch:
         - action: sync

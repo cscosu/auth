@@ -34,10 +34,28 @@
     hx-patch="/admin/vote/{{ .electionId }}"
   />
   <p class="font-bold">Candidates</p>
-  <ul>
+	<table class="table-auto">
+		<thead>    
+			<tr>      
+				<th>Name</th>      
+				<th>Vote Count</th>
+				<th>Percentage</th>
+			</tr>
+		<tbody>
     {{
       range.candidates
     }}
+			<tr>
+				<td>{{ .Name }}</td> 
+				<td>{{ .Votes }}</td>
+				<td>1</td>
+			</tr>
+    {{
+      end
+    }}
+		</tbody>
+	</table>
+  <ul>
     <li class="flex items-center before:content-['•'] before:mr-2 group">
       <input
         type="text"
@@ -71,9 +89,6 @@
         </svg>
       </button>
     </li>
-    {{
-      end
-    }}
     <li>
       <button
         class="italic"
