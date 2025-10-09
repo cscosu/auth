@@ -588,6 +588,7 @@ func main() {
 	mux.Handle("/discord/callback", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.DiscordCallback))))
 	mux.Handle("/admin", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.admin)))))
 	mux.Handle("/admin/users", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.adminUsers)))))
+	mux.Handle("/admin/auth.db", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.adminDownloadDatabase)))))
 	mux.Handle("/admin/users/{user_id}", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.adminUserEdit)))))
 	mux.Handle("/admin/vote", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.adminVote)))))
 	mux.Handle("GET /admin/vote/new", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(router.EnforceAdminMiddleware(http.HandlerFunc(router.adminVoteEdit)))))
