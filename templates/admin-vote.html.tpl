@@ -5,35 +5,70 @@
 {{ define "admin" }}
 <div class="card">
   <div class="card-title">Admin Votes</div>
-  <div class="card-content">
-    <a hx-boost="true" href="/admin/vote/new" class="secondary-button"
-      >New Vote</a
-    >
-
-    <div>
-      <h1>Past Votes</h1>
-      <ul class="list-disc list-inside">
-        {{
-          range.pastElections
-        }}
-        <li>
-          <a
-            class="font-bold"
-            hx-boost="true"
-            href="/admin/vote/{{ .ElectionId }}"
-            >{{ .Name }}</a
-          >
-          {{ if .Published }}<em>published</em>{{ end }}
-
-          {{ if .Done }}
-          <em>completed {{ .DoneTime }}</em>
-          {{ end }}
-        </li>
-        {{
-          end
-        }}
-      </ul>
-    </div>
-  </div>
+	<a hx-boost="true" href="/admin/vote/new" class="secondary-button"
+		>New Vote</a
+	>
+	<div class="container">
+		<div class="subcard">
+			<h5 class="mb-3 text-base font-semibold">
+				Published
+			</h5>
+			<ul>
+				{{ range.pastElections }}
+				<li>
+					{{ if .Published }} 
+					<span class="flex-1 ms-3 whitespace-nowrap">
+						<a
+							hx-boost="true"
+							href="/admin/vote/{{ .ElectionId }}"
+							>{{ .Name }}</a
+						>
+					</span>
+					{{ end }}
+				</li>
+				{{ end }}
+			</ul>
+		</div>
+		<div class="subcard">
+			<h5 class="mb-3 text-base font-semibold">
+				Closed
+			</h5>
+			<ul>
+				{{ range.pastElections }}
+				<li>
+					{{ if .Done }} 
+					<span class="flex-1 ms-3 whitespace-nowrap">
+						<a
+							hx-boost="true"
+							href="/admin/vote/{{ .ElectionId }}"
+							>{{ .Name }}</a
+						>
+					</span>
+					{{ end }}
+				</li>
+				{{ end }}
+			</ul>
+		</div>
+		<div class="subcard">
+			<h5 class="mb-3 text-base font-semibold">
+				Unpublished
+			</h5>
+			<ul>
+				{{ range.pastElections }}
+				<li>
+					{{ if and (not .Published) (not .Done) }} 
+					<span class="flex-1 ms-3 whitespace-nowrap">
+						<a
+							hx-boost="true"
+							href="/admin/vote/{{ .ElectionId }}"
+							>{{ .Name }}</a
+						>
+					</span>
+					{{ end }}
+				</li>
+				{{ end }}
+			</ul>
+		</div>
+	</div>
 </div>
 {{ end }}

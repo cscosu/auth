@@ -11,11 +11,21 @@
       @tailwind base;
       @tailwind components;
       @tailwind utilities;
-      .card { @apply shadow-md rounded-sm border; }
+      .card { 
+				@apply shadow-md rounded-sm 
+				border; 
+				padding-right: 25px;
+			}
+			.container {
+				display: flex; 
+				margin-right: 20px;
+			}
+			.container div { margin: 5px 10px; }
+      .subcard { @apply w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:bg-gray-100 dark:border-gray-100; }
       .card-title { @apply shadow-sm py-2 px-3 font-bold; }
       .card-content { @apply py-2 px-3; }
       .external-link { @apply text-blue-500; }
-      .secondary-button { @apply inline-flex border border-gray-300 hover:border-gray-400 active:border-gray-500 text-gray-800 rounded-md cursor-pointer px-4 py-2 text-center; }
+      .secondary-button { @apply inline-flex border border-gray-300 hover:border-gray-400 active:border-gray-500 text-gray-800 rounded-md cursor-pointer px-4 py-2 text-center; margin-left: 20px; }
       .primary-button { @apply inline-flex bg-teal-400 hover:bg-teal-500 active:bg-teal-600 font-bold text-gray-100 rounded-md cursor-pointer px-4 py-2 text-center; }
     </style>
     <title>{{ block "title" . }}{{ end }}</title>
