@@ -18,8 +18,7 @@
     <a
       href="/admin/auth.db"
       target="_top"
-      class="rounded-sm px-4 py-2 hover:bg-gray-100 inline-flex justify-between
-        {{ if eq .path `/admin/download` }}bg-gray-100{{ end }}"
+      class="rounded-sm px-4 py-2 hover:bg-gray-100 inline-flex justify-between"
       >
         <span>Database</span>
         <svg
