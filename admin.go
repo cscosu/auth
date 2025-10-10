@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -264,6 +266,40 @@ func (r *Router) adminUsers(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println("Failed to render template:", err)
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
+const databaseFile = "backup.db"
+
+func (r *Router) adminDownloadDatabase(w http.ResponseWriter, req *http.Request) {
+	_, err := r.db.ExecContext(req.Context(), "VACUUM")
+	if err != nil {
+		log.Println("Failed to vacuum database:", err)
+		http.Error(w, "Failed to vacuum database", http.StatusInternalServerError)
+		return
+	}
+
+	_ = os.Remove(databaseFile)
+
+	_, err = r.db.ExecContext(req.Context(), "VACUUM main INTO ?", databaseFile)
+	if err != nil {
+		log.Println("Failed to backup database to file:", err)
+		http.Error(w, "Failed to backup database to file", http.StatusInternalServerError)
+		return
+	}
+
+	f, err := os.Open(databaseFile)
+	if err != nil {
+		log.Println("Failed to open database file:", err)
+		http.Error(w, "Failed to open database file", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = io.Copy(w, f)
+	if err != nil {
+		log.Println("Failed to write database to writer:", err)
+		http.Error(w, "Failed to write database to writer", http.StatusInternalServerError)
 		return
 	}
 }
