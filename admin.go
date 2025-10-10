@@ -279,19 +279,23 @@ func (r *Router) adminDownloadDatabase(w http.ResponseWriter, req *http.Request)
 		http.Error(w, "Failed to vacuum database", http.StatusInternalServerError)
 		return
 	}
+
 	_ = os.Remove(databaseFile)
+
 	_, err = r.db.ExecContext(req.Context(), "VACUUM main INTO ?", databaseFile)
 	if err != nil {
 		log.Println("Failed to backup database to file:", err)
 		http.Error(w, "Failed to backup database to file", http.StatusInternalServerError)
 		return
 	}
+
 	f, err := os.Open(databaseFile)
 	if err != nil {
 		log.Println("Failed to open database file:", err)
 		http.Error(w, "Failed to open database file", http.StatusInternalServerError)
 		return
 	}
+
 	_, err = io.Copy(w, f)
 	if err != nil {
 		log.Println("Failed to write database to writer:", err)
