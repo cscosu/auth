@@ -275,9 +275,9 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 	done := timestamp > 1
 
 	type Candidate struct {
-		Id    int
-		Name  string
-		Votes int
+		Id         int
+		Name       string
+		Votes      int
 		Percentage float64
 	}
 
@@ -496,9 +496,9 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 	}
 
 	type Candidate struct {
-		Id   int
-		Name string
-		Votes	int
+		Id         int
+		Name       string
+		Votes      int
 		Percentage float64
 	}
 
@@ -524,7 +524,7 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 		candidates = append(candidates, candidate)
 		totalVotes += candidate.Votes
 	}
-	
+
 	for i := range candidates {
 		candidates[i].Percentage = 0.0
 	}
