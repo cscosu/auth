@@ -11,15 +11,8 @@
       @tailwind base;
       @tailwind components;
       @tailwind utilities;
-      .card { 
-				@apply shadow-md rounded-sm 
-				border; 
-				padding-right: 25px;
-				
-			}
-			.container {
-				@apply flex flex-col gap-4 p-2
-			}
+      .card { @apply shadow-md rounded-sm border; }
+			.container {@apply flex flex-col gap-4 p-2; }
       .subcard { @apply w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:bg-gray-100 dark:border-gray-100; }
       .card-title { @apply shadow-sm py-2 px-3 font-bold; }
       .card-content { @apply py-2 px-3; }
