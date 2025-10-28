@@ -275,9 +275,10 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 	done := timestamp > 1
 
 	type Candidate struct {
-		Id    int
-		Name  string
-		Votes int
+		Id         int
+		Name       string
+		Votes      int
+		Percentage float64
 	}
 
 	var orderBy string
@@ -305,6 +306,15 @@ func (r *Router) adminVoteEdit(w http.ResponseWriter, req *http.Request) {
 		}
 		candidates = append(candidates, candidate)
 		totalVotes += candidate.Votes
+	}
+
+	for i := range candidates {
+		if totalVotes > 0 {
+			percentage := (float64(candidates[i].Votes) * 100.0) / float64(totalVotes)
+			candidates[i].Percentage = percentage
+		} else {
+			candidates[i].Percentage = 0.0
+		}
 	}
 
 	if !published && req.Method == "PUT" {
@@ -486,29 +496,37 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 	}
 
 	type Candidate struct {
-		Id   int
-		Name string
+		Id         int
+		Name       string
+		Votes      int
+		Percentage float64
 	}
 
-	rows, err := r.db.Query("SELECT candidate_id, name FROM candidates WHERE election_id = ?", electionId)
+	rows, err := r.db.Query("SELECT candidate_id, name, votes FROM candidates WHERE election_id = ?", electionId)
 	if err != nil {
-		log.Println("Failed to get candidates:", err)
+		log.Println("Facandidateiled to get candidates:", err)
 		http.Error(w, "Failed to get candidates", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
 	var candidates []Candidate
+	totalVotes := 0
 
 	for rows.Next() {
 		var candidate Candidate
-		err = rows.Scan(&candidate.Id, &candidate.Name)
+		err = rows.Scan(&candidate.Id, &candidate.Name, &candidate.Votes)
 		if err != nil {
 			log.Println("Failed to get candidate:", err)
 			http.Error(w, "Failed to get candidate", http.StatusInternalServerError)
 			return
 		}
 		candidates = append(candidates, candidate)
+		totalVotes += candidate.Votes
+	}
+
+	for i := range candidates {
+		candidates[i].Percentage = 0.0
 	}
 
 	err = Templates.ExecuteTemplate(w, "admin-vote-edit-partial.html.tpl", map[string]any{
@@ -516,7 +534,7 @@ func (r *Router) adminVotePublish(w http.ResponseWriter, req *http.Request) {
 		"electionName": electionName,
 		"electionId":   electionId,
 		"candidates":   candidates,
-		"totalVotes":   0,
+		"totalVotes":   totalVotes,
 	})
 	if err != nil {
 		log.Println("Failed to render template:", err)

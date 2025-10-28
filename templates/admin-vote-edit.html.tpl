@@ -20,16 +20,6 @@
     {{ if .done }}
     <div>
       <canvas id="candidatesChart"></canvas>
-      <div id="labels" class="hidden">
-        {{ range.candidates }}
-        <p>{{ .Name }}</p>
-        {{ end }}
-      </div>
-      <div id="datas" class="hidden">
-        {{ range.candidates }}
-        <p>{{ .Votes }}</p>
-        {{ end }}
-      </div>
       <script>
         (function () {
           const candidatesChart = document.getElementById("candidatesChart");
