@@ -3,15 +3,42 @@
   <p class="font-bold">Election Name</p>
   <p>{{ .electionName }}</p>
   <p class="font-bold">Candidates</p>
-  <ul class="flex flex-col gap-1 list-disc list-inside">
-    {{
-      range.candidates
-    }}
-    <li>{{ .Name }}{{ if $.done }}: {{ .Votes }}{{ end }}</li>
-    {{
-      end
-    }}
-  </ul>
+	<div class="relative overflow-x-auto">
+			<table class="w-full text-sm text-left rtl:text-right">
+					<thead class="dark:bg-gray-400">
+							<tr>
+									<th class="px-6 py-3">
+										Name
+									</th>
+									<th class="px-6 py-3">
+										Vote Count
+									</th>
+									<th class="px-6 py-3">
+										Percentage
+									</th>
+							</tr>
+					</thead>
+					<tbody>
+							{{
+								range .candidates 
+							}}
+							<tr class="bg-white border-b dark:bg-gray-200 dark:border-gray-300 border-gray-200">
+									<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+										{{ .Name }}
+									</th>
+									<td class="px-6 py-4">
+										{{ .Votes }}
+									</td>
+									<td class="px-6 py-4">
+										{{ printf "%.2f" .Percentage }}%
+									</td>
+							</tr>
+							{{
+								end
+							}}
+					</tbody>
+			</table>
+	</div>
   <p>{{ .totalVotes }} total vote{{ if ne .totalVotes 1 }}s{{ end }}</p>
   {{ if not .done }}
   <a
@@ -26,47 +53,14 @@
 {{ else }}
 <div id="form">
   <p class="font-bold">Election Name</p>
-	<input type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Obama vs. Trump" required />
-  <input
-    type="text"
-    name="electionName"
-    value="{{ .electionName }}"
-    hx-trigger="input changed delay:500ms"
-    hx-patch="/admin/vote/{{ .electionId }}"
-  />
+	<input type="text" name="electionName" value="{{ .electionName }}" hx-trigger="input changed delay:500ms" hx-patch="/admin/vote/{{ .electionId }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="New Name" required />
   <p class="font-bold">Candidates</p>
-	<table class="table-auto">
-		<thead>    
-			<tr>      
-				<th>Name</th>      
-				<th>Vote Count</th>
-				<th>Percentage</th>
-			</tr>
-		<tbody>
-    {{
-      range.candidates
-    }}
-			<tr>
-				<td>{{ .Name }}</td> 
-				<td>{{ .Votes }}</td>
-				<td>1</td>
-			</tr>
-    {{
-      end
-    }}
-		</tbody>
-	</table>
   <ul>
-    <li class="flex items-center before:content-['•'] before:mr-2 group">
-      <input
-        type="text"
-        name="candidateName"
-        value="{{ .Name }}"
-        hx-trigger="input changed delay:500ms"
-        hx-patch="/admin/vote/{{ $.electionId }}/{{ .Id }}"
-      />
+		{{ range.candidates }}
+    <li class="flex items-center before:mr-2 group">
+			<input type="text" name="candidateName" value="{{ .Name }}" hx-trigger="input changed delay:500ms" hx-patch="/admin/vote/{{ $.electionId }}/{{ .Id }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="New Name" required />
       <button
-        class="ml-1 text-red-700 hidden group-hover:block"
+        class="ml-1 text-red-700 group-hover:block"
         hx-delete="/admin/vote/{{ $.electionId }}/{{ .Id }}"
         hx-target="#form"
       >
@@ -90,9 +84,10 @@
         </svg>
       </button>
     </li>
+		{{ end }}
     <li>
       <button
-        class="italic"
+				class="secondary-button"
         hx-put="/admin/vote/{{ .electionId }}"
         hx-target="#form"
       >
