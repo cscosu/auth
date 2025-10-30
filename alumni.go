@@ -43,10 +43,10 @@ type Building struct {
 }
 
 type Phone struct {
-	AreaCode   string `json:area_code`
-	Exchange   string `json:exchange`
-	Subscriber string `json:subscriber`
-	Formatted  string `json:formatted`
+	AreaCode   string `json:"area_code"`
+	Exchange   string `json:"exchange"`
+	Subscriber string `json:"subscriber"`
+	Formatted  string `json:"formatted"`
 }
 
 type Major struct {
@@ -55,11 +55,11 @@ type Major struct {
 }
 
 type Appointment struct {
-	JobTitle      string `json:job_title`
-	WorkingTitle  string `json:working_title`
-	Organization  string `json:organization`
-	OrgCode       string `json:org_code`
-	VpCollegeName string `json:vp_college_name`
+	JobTitle      string `json:"job_title"`
+	WorkingTitle  string `json:"working_title"`
+	Organization  string `json:"organization"`
+	OrgCode       string `json:"org_code"`
+	VpCollegeName string `json:"vp_college_name"`
 }
 
 // Checks whether a user exists according to the OSU people search. `userid` should be in name.number format
@@ -88,7 +88,7 @@ func userExists(userid string) (bool, error) {
 
 // Gets a current student from the database and alumnifies them if appropriate
 func alumnusCheckNextUser(b *DiscordBot) error {
-	row := b.Db.QueryRow("SELECT buck_id, discord_id, name_num FROM users WHERE student=1 AND alum=0 ORDER BY last_alum_check_timestamp ASC LIMIT(1)")
+	row := b.Db.QueryRow("SELECT buck_id, discord_id, name_num FROM users WHERE student=1 AND alum=0 AND discord_id IS NOT NULL ORDER BY last_alum_check_timestamp ASC LIMIT(1)")
 	var buckId string
 	var discordId string
 	var nameNum string
@@ -96,6 +96,7 @@ func alumnusCheckNextUser(b *DiscordBot) error {
 	if err == sql.ErrNoRows {
 		return nil
 	}
+
 	if err != nil {
 		return err
 	}

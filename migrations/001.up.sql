@@ -1,6 +1,6 @@
 PRAGMA journal_mode=WAL;
-PRAGMA user_version=1;
 BEGIN;
+PRAGMA user_version=1;
 
 CREATE TABLE IF NOT EXISTS users (
     buck_id TEXT PRIMARY KEY,

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -405,6 +406,50 @@ func (r *Router) EnforceJwtMiddleware(handler http.Handler) http.Handler {
 //go:embed migrations/*
 var migrations embed.FS
 
+func apply_migrations(db *sql.DB) {
+	dirs, err := migrations.ReadDir("migrations")
+	if err != nil {
+		log.Fatalln("Failed to read migrations directory:", err)
+	}
+
+	slices.SortStableFunc(dirs, func(a fs.DirEntry, b fs.DirEntry) int {
+		return strings.Compare(a.Name(), b.Name())
+	})
+
+	for _, entry := range dirs {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
+			continue
+		}
+
+		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
+		if err != nil {
+			log.Fatalln("Failed to read", entry.Name(), err)
+		}
+
+		migration_number, err := strconv.Atoi(strings.TrimSuffix(entry.Name(), ".up.sql"))
+		if err != nil {
+			log.Fatalln("migration names should be numeric", err)
+		}
+
+		version_row := db.QueryRow("PRAGMA user_version")
+		var version int
+		version_row.Scan(&version)
+		if migration_number <= version {
+			fmt.Printf("Not applying migration %s user_version: %v\n", entry.Name(), version)
+			continue
+		} else {
+			fmt.Printf("Applying migration %s user_version: %v\n", entry.Name(), version)
+		}
+
+		sql := string(data)
+
+		_, err = db.Exec(sql)
+		if err != nil {
+			log.Fatalln("Failed to run", entry.Name(), err)
+		}
+	}
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -451,47 +496,7 @@ func main() {
 		panic(err)
 	}
 
-	dirs, err := migrations.ReadDir("migrations")
-	if err != nil {
-		log.Fatalln("Failed to read migrations directory:", err)
-	}
-
-	slices.SortStableFunc(dirs, func(a fs.DirEntry, b fs.DirEntry) int {
-		return strings.Compare(a.Name(), b.Name())
-	})
-
-	for _, entry := range dirs {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
-			continue
-		}
-
-		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
-		if err != nil {
-			log.Fatalln("Failed to read", entry.Name(), err)
-		}
-
-		migration_number, err := strconv.Atoi(strings.TrimSuffix(entry.Name(), ".up.sql"))
-		if err != nil {
-			log.Fatalln("migration names should be numeric", err)
-		}
-
-		version_row := db.QueryRow("PRAGMA user_version")
-		var version int
-		version_row.Scan(&version)
-		if migration_number < version {
-			fmt.Printf("Not applying migration %s\n", entry.Name())
-			continue
-		} else {
-			fmt.Printf("Applying migration %s\n", entry.Name())
-		}
-
-		sql := string(data)
-
-		_, err = db.Exec(sql)
-		if err != nil {
-			log.Fatalln("Failed to run", entry.Name(), err)
-		}
-	}
+	apply_migrations(db)
 
 	authEnvironment := os.Getenv("ENV")
 
@@ -600,8 +605,9 @@ func main() {
 				fmt.Printf("error: %s", err.Error())
 			}
 			fmt.Println("Done alumnifying")
-			// time.Sleep(time.Duration(60+rand.Intn(60)) * time.Minute)
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Duration(60+rand.Intn(60)) * time.Minute)
+			// Short time for debugging
+			// time.Sleep(time.Second * 10)
 		}
 	}()
 
