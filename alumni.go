@@ -62,6 +62,7 @@ type Appointment struct {
 	VpCollegeName string `json:vp_college_name`
 }
 
+// Checks whether a user exists according to the OSU people search. `userid` should be in name.number format
 func userExists(userid string) (bool, error) {
 	resp, err := http.Get(fmt.Sprintf("https://directory.osu.edu/fpjson.php?name_n=%s", userid))
 	if err != nil {
@@ -85,8 +86,9 @@ func userExists(userid string) (bool, error) {
 	return true, nil
 }
 
+// Gets a current student from the database and alumnifies them if appropriate
 func alumnusCheckNextUser(b *DiscordBot) error {
-	row := b.Db.QueryRow("SELECT buck_id, discord_id, nameNum FROM users WHERE student=1 AND alum=0 ORDER BY last_alum_check_timestamp ASC LIMIT(1)")
+	row := b.Db.QueryRow("SELECT buck_id, discord_id, name_num FROM users WHERE student=1 AND alum=0 ORDER BY last_alum_check_timestamp ASC LIMIT(1)")
 	var buckId string
 	var discordId string
 	var nameNum string

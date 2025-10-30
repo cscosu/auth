@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -469,6 +470,21 @@ func main() {
 			log.Fatalln("Failed to read", entry.Name(), err)
 		}
 
+		migration_number, err := strconv.Atoi(strings.TrimSuffix(entry.Name(), ".up.sql"))
+		if err != nil {
+			log.Fatalln("migration names should be numeric", err)
+		}
+
+		version_row := db.QueryRow("PRAGMA user_version")
+		var version int
+		version_row.Scan(&version)
+		if migration_number < version {
+			fmt.Printf("Not applying migration %s\n", entry.Name())
+			continue
+		} else {
+			fmt.Printf("Applying migration %s\n", entry.Name())
+		}
+
 		sql := string(data)
 
 		_, err = db.Exec(sql)
@@ -575,9 +591,18 @@ func main() {
 		mailchimp:    mailchimp,
 	}
 
+	// auto alumnify
 	go func() {
-		alumnusCheckNextUser(bot)
-		time.Sleep(1 * time.Hour)
+		for {
+			fmt.Println("Alumnifying")
+			err = alumnusCheckNextUser(bot)
+			if err != nil {
+				fmt.Printf("error: %s", err.Error())
+			}
+			fmt.Println("Done alumnifying")
+			// time.Sleep(time.Duration(60+rand.Intn(60)) * time.Minute)
+			time.Sleep(time.Second * 10)
+		}
 	}()
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))

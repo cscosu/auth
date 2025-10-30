@@ -1,5 +1,5 @@
 PRAGMA journal_mode=WAL;
-
+PRAGMA user_version=1;
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS users (
