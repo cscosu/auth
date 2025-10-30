@@ -172,7 +172,10 @@ func (b *DiscordBot) Connect() {
 	s.AddHandler(func(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 		row := b.Db.QueryRow("SELECT buck_id FROM users WHERE discord_id = ?", m.User.ID)
 		if row != nil {
-			b.GiveStudentRole(m.User.ID)
+			err = b.GiveStudentRole(m.User.ID)
+			if err != nil {
+				log.Printf("Unable to add student role to user %v\n", m.User.Username)
+			}
 		}
 	})
 
@@ -223,12 +226,12 @@ func (b *DiscordBot) Alumnify(discordId string) error {
 
 	err := b.Session.GuildMemberRoleRemove(b.GuildId, discordId, b.StudentRoleId)
 	if err != nil {
-		return fmt.Errorf("failed to remove student role from alum: %s")
+		return fmt.Errorf("failed to remove student role from alum: %s", b.StudentRoleId)
 	}
 
 	err = b.Session.GuildMemberRoleAdd(b.GuildId, discordId, b.AlumniRoleId)
 	if err != nil {
-		return fmt.Errorf("failed to add student role to alum: %s")
+		return fmt.Errorf("failed to add student role to alum: %s", b.StudentRoleId)
 	}
 
 	b.Db.Exec("UPDATE Users set alum=1, student=0 WHERE discord_id=?", discordId)
