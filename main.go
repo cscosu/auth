@@ -433,7 +433,10 @@ func apply_migrations(db *sql.DB) {
 
 		version_row := db.QueryRow("PRAGMA user_version")
 		var version int
-		version_row.Scan(&version)
+		err = version_row.Scan(&version)
+		if err != nil {
+			log.Fatalln("Unable to get user_version from database.")
+		}
 		if migration_number <= version {
 			fmt.Printf("Not applying migration %s user_version: %v\n", entry.Name(), version)
 			continue
