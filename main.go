@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -404,6 +406,53 @@ func (r *Router) EnforceJwtMiddleware(handler http.Handler) http.Handler {
 //go:embed migrations/*
 var migrations embed.FS
 
+func apply_migrations(db *sql.DB) {
+	dirs, err := migrations.ReadDir("migrations")
+	if err != nil {
+		log.Fatalln("Failed to read migrations directory:", err)
+	}
+
+	slices.SortStableFunc(dirs, func(a fs.DirEntry, b fs.DirEntry) int {
+		return strings.Compare(a.Name(), b.Name())
+	})
+
+	for _, entry := range dirs {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
+			continue
+		}
+
+		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
+		if err != nil {
+			log.Fatalln("Failed to read", entry.Name(), err)
+		}
+
+		migration_number, err := strconv.Atoi(strings.TrimSuffix(entry.Name(), ".up.sql"))
+		if err != nil {
+			log.Fatalln("migration names should be numeric", err)
+		}
+
+		version_row := db.QueryRow("PRAGMA user_version")
+		var version int
+		err = version_row.Scan(&version)
+		if err != nil {
+			log.Fatalln("Unable to get user_version from database.")
+		}
+		if migration_number <= version {
+			fmt.Printf("Not applying migration %s user_version: %v\n", entry.Name(), version)
+			continue
+		} else {
+			fmt.Printf("Applying migration %s user_version: %v\n", entry.Name(), version)
+		}
+
+		sql := string(data)
+
+		_, err = db.Exec(sql)
+		if err != nil {
+			log.Fatalln("Failed to run", entry.Name(), err)
+		}
+	}
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -450,32 +499,7 @@ func main() {
 		panic(err)
 	}
 
-	dirs, err := migrations.ReadDir("migrations")
-	if err != nil {
-		log.Fatalln("Failed to read migrations directory:", err)
-	}
-
-	slices.SortStableFunc(dirs, func(a fs.DirEntry, b fs.DirEntry) int {
-		return strings.Compare(a.Name(), b.Name())
-	})
-
-	for _, entry := range dirs {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
-			continue
-		}
-
-		data, err := migrations.ReadFile(fmt.Sprintf("migrations/%v", entry.Name()))
-		if err != nil {
-			log.Fatalln("Failed to read", entry.Name(), err)
-		}
-
-		sql := string(data)
-
-		_, err = db.Exec(sql)
-		if err != nil {
-			log.Fatalln("Failed to run", entry.Name(), err)
-		}
-	}
+	apply_migrations(db)
 
 	authEnvironment := os.Getenv("ENV")
 
@@ -501,6 +525,7 @@ func main() {
 		GuildId:       os.Getenv("DISCORD_GUILD_ID"),
 		AdminRoleId:   os.Getenv("DISCORD_ADMIN_ROLE_ID"),
 		StudentRoleId: os.Getenv("DISCORD_STUDENT_ROLE_ID"),
+		AlumniRoleId:  os.Getenv("DISCORD_ALUMNI_ROLE_ID"),
 		ClientId:      os.Getenv("DISCORD_CLIENT_ID"),
 		ClientSecret:  os.Getenv("DISCORD_CLIENT_SECRET"),
 		Db:            db,
@@ -573,6 +598,21 @@ func main() {
 		rootURL:      rootURL,
 		mailchimp:    mailchimp,
 	}
+
+	// auto alumnify
+	go func() {
+		for {
+			fmt.Println("Alumnifying")
+			err = alumnusCheckNextUser(bot)
+			if err != nil {
+				fmt.Printf("error: %s", err.Error())
+			}
+			fmt.Println("Done alumnifying")
+			time.Sleep(time.Duration(60+rand.Intn(60)) * time.Minute)
+			// Short time for debugging
+			// time.Sleep(time.Second * 10)
+		}
+	}()
 
 	mux.Handle("/", router.InjectJwtMiddleware(http.HandlerFunc(router.index)))
 	mux.Handle("POST /mailchimp", router.InjectJwtMiddleware(router.EnforceJwtMiddleware(http.HandlerFunc(router.SetMailchimp))))

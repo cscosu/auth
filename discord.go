@@ -15,6 +15,7 @@ type DiscordBot struct {
 	GuildId       string
 	AdminRoleId   string
 	StudentRoleId string
+	AlumniRoleId  string
 	ClientId      string
 	ClientSecret  string
 	Db            *sql.DB
@@ -156,6 +157,8 @@ func (b *DiscordBot) Connect() {
 
 	b.Session = s
 
+	s.Identify.Intents = discordgo.IntentGuildMembers
+
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("Logged in as", r.User.String())
 	})
@@ -163,6 +166,16 @@ func (b *DiscordBot) Connect() {
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(b, i)
+		}
+	})
+
+	s.AddHandler(func(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+		row := b.Db.QueryRow("SELECT buck_id FROM users WHERE discord_id = ?", m.User.ID)
+		if row != nil {
+			err = b.GiveStudentRole(m.User.ID)
+			if err != nil {
+				log.Printf("Unable to add student role to user %v\n", m.User.Username)
+			}
 		}
 	})
 
@@ -203,4 +216,28 @@ func (b *DiscordBot) RemoveStudentRole(discordId string) error {
 		return fmt.Errorf("discord bot not connected")
 	}
 	return b.Session.GuildMemberRoleRemove(b.GuildId, discordId, b.StudentRoleId)
+}
+
+// Turns a student into an alum (removes student role and adds alumni role)
+func (b *DiscordBot) Alumnify(discordId string) error {
+	if b.Session == nil {
+		return fmt.Errorf("discord bot not connected")
+	}
+
+	err := b.Session.GuildMemberRoleRemove(b.GuildId, discordId, b.StudentRoleId)
+	if err != nil {
+		return fmt.Errorf("failed to remove student role from alum %s. %v", b.StudentRoleId, err)
+	}
+
+	err = b.Session.GuildMemberRoleAdd(b.GuildId, discordId, b.AlumniRoleId)
+	if err != nil {
+		return fmt.Errorf("failed to add student role to alum %s. %v", b.StudentRoleId, err)
+	}
+
+	_, err = b.Db.Exec("UPDATE Users set alum=1, student=0 WHERE discord_id=?", discordId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
